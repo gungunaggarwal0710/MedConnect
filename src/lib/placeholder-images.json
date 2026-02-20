@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "doctor-1",
+      "description": "Professional cardiologist in clinic",
+      "imageUrl": "https://images.unsplash.com/photo-1663182107973-abb58c2c13e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N0b3IlMjBob3NwaXRhbHxlbnwwfHx8fDE3NzE1NjgwNzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor hospital"
+    },
+    {
+      "id": "hospital-1",
+      "description": "Modern hospital building exterior",
+      "imageUrl": "https://images.unsplash.com/photo-1769147555720-71fc71bfc216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxob3NwaXRhbCUyMGFyY2hpdGVjdHVyZXxlbnwwfHx8fDE3NzE1NjgwNzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hospital architecture"
+    },
+    {
+      "id": "first-aid-cpr",
+      "description": "CPR technique demonstration",
+      "imageUrl": "https://images.unsplash.com/photo-1759872138841-c342bd6410ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmaXJzdCUyMGFpZCUyMGNwcnxlbnwwfHx8fDE3NzE1NjgwNzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "first aid cpr"
+    },
+    {
+      "id": "health-dash",
+      "description": "Abstract health data visualization",
+      "imageUrl": "https://images.unsplash.com/photo-1669355106052-b7456721510c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoZWFsdGglMjBjaGFydHN8ZW58MHx8fHwxNzcxNTY4MDczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "health charts"
+    }
+  ]
 }
