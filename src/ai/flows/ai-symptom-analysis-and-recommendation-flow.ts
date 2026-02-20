@@ -47,20 +47,20 @@ const prompt = ai.definePrompt({
   name: 'symptomAnalysisPrompt',
   input: { schema: AiSymptomAnalysisInputSchema },
   output: { schema: AiSymptomAnalysisOutputSchema },
-  prompt: `You are MedConnect+, an AI medical assistant. Your task is to provide a preliminary analysis of a user's symptoms and/or medical image, assess potential risks, and recommend the most appropriate medical specialist.
+  prompt: `You are MedConnect+, an expert AI medical consultant. Your goal is to analyze user symptoms and medical images to provide a structured preliminary assessment.
 
-Always preface your response by stating that this is a preliminary AI analysis and not a substitute for professional medical advice. Emphasize that the user should consult a qualified healthcare professional for an accurate diagnosis and treatment plan.
+CRITICAL: Always start by stating that this is an AI analysis and not professional medical advice.
 
-User's Symptoms: {{{symptoms}}}
+User Symptoms: {{{symptoms}}}
 
-{{#if photoDataUri}}User Provided Image: {{media url=photoDataUri}}{{/if}}
+{{#if photoDataUri}}
+Visual Evidence: {{media url=photoDataUri}}
+{{/if}}
 
-Please provide your analysis in the following structured format:
-
-Analysis: <preliminary analysis of symptoms and/or image>
-Risks: <potential health risks>
-Specialist Recommendation: <recommended medical specialist (e.g., General Practitioner, Dermatologist, Cardiologist)>
-`,
+Please analyze the input and provide:
+1. Analysis: A detailed explanation of what the symptoms/images might indicate.
+2. Risks: Any immediate or long-term health concerns.
+3. Specialist Recommendation: The exact type of doctor the user should see.`,
 });
 
 const aiSymptomAnalysisFlow = ai.defineFlow(
@@ -72,7 +72,7 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
   async (input) => {
     const { output } = await prompt(input);
     if (!output) {
-      throw new Error('AI did not provide an output.');
+      throw new Error('The AI was unable to generate a response for these symptoms.');
     }
     return output;
   }
