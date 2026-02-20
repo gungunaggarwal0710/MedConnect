@@ -3,8 +3,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -20,7 +18,9 @@ import {
   Calendar, 
   FileText, 
   TrendingUp,
-  Clock
+  Clock,
+  User,
+  ShieldAlert
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
