@@ -12,6 +12,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
+export const maxDuration = 60; // Increase server action timeout to 60 seconds
+
 const AiSymptomAnalysisInputSchema = z.object({
   symptoms: z
     .string()
@@ -49,7 +51,7 @@ const prompt = ai.definePrompt({
   output: { schema: AiSymptomAnalysisOutputSchema },
   prompt: `You are MedConnect+, an expert AI medical consultant. Your goal is to analyze user symptoms and medical images to provide a structured preliminary assessment.
 
-CRITICAL: Always start by stating that this is an AI analysis and not professional medical advice.
+CRITICAL: Always start by stating that this is an AI analysis and not professional medical advice. If you cannot determine anything clearly, provide general health guidance and emphasize seeing a doctor.
 
 User Symptoms: {{{symptoms}}}
 
@@ -70,10 +72,15 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     outputSchema: AiSymptomAnalysisOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('The AI was unable to generate a response for these symptoms.');
+    try {
+      const { output } = await prompt(input);
+      if (!output) {
+        throw new Error('The AI was unable to generate a valid medical assessment.');
+      }
+      return output;
+    } catch (error: any) {
+      console.error("Genkit Flow Error:", error);
+      throw new Error(error.message || 'An error occurred during AI analysis.');
     }
-    return output;
   }
 );

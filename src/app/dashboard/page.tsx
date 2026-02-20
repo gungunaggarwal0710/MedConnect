@@ -23,6 +23,7 @@ import {
   ShieldAlert
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const healthData = [
   { day: 'Mon', bpm: 72, steps: 4000 },
@@ -191,8 +192,4 @@ export default function DashboardPage() {
       </main>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }

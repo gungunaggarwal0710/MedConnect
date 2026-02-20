@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity } from "lucide-react";
+import { MessageSquare, Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import { aiSymptomAnalysisAndRecommendation } from "@/ai/flows/ai-symptom-analysis-and-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
@@ -26,8 +26,8 @@ export default function AIChatPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ title: "File too large", description: "Max 5MB allowed", variant: "destructive" });
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Max 10MB allowed", variant: "destructive" });
         return;
       }
       const reader = new FileReader();
@@ -51,8 +51,14 @@ export default function AIChatPage() {
         photoDataUri: image || undefined
       });
       setResult(response);
-    } catch (error) {
-      toast({ title: "Analysis Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: "Analysis Complete", description: "Your health report is ready." });
+    } catch (error: any) {
+      console.error("Analysis Error:", error);
+      toast({ 
+        title: "Analysis Failed", 
+        description: error.message || "Something went wrong. Please try again with more details.", 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
@@ -96,12 +102,17 @@ export default function AIChatPage() {
                   onClick={() => document.getElementById('image-upload')?.click()}
                 >
                   {image ? (
-                    <img src={image} alt="Upload" className="max-h-32 rounded-md" />
+                    <div className="relative group">
+                      <img src={image} alt="Upload" className="max-h-48 rounded-md" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-md">
+                        <RefreshCcw className="text-white h-8 w-8" />
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                       <span className="text-sm text-muted-foreground text-center">
-                        Upload rashes, wounds, or swelling (Max 5MB)
+                        Upload rashes, wounds, or swelling (Max 10MB)
                       </span>
                     </>
                   )}
@@ -133,7 +144,7 @@ export default function AIChatPage() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
+                    Analyzing Medical Data...
                   </>
                 ) : (
                   <>
