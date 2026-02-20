@@ -12,8 +12,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const maxDuration = 60; // Increase server action timeout to 60 seconds
-
 const AiSymptomAnalysisInputSchema = z.object({
   symptoms: z
     .string()
