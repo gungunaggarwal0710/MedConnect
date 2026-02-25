@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for AI symptom analysis and recommendation.
@@ -24,6 +23,7 @@ const AiSymptomAnalysisInputSchema = z.object({
         "An optional photo of a medical condition (e.g., rash, wound), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
       ),
 });
+
 export type AiSymptomAnalysisInput = z.infer<
   typeof AiSymptomAnalysisInputSchema
 >;
@@ -34,10 +34,15 @@ const AiSymptomAnalysisOutputSchema = z.object({
   specialistRecommendation:
     z.string().describe('Recommendation for an appropriate medical specialist to consult.'),
 });
+
 export type AiSymptomAnalysisOutput = z.infer<
   typeof AiSymptomAnalysisOutputSchema
 >;
 
+/**
+ * Main entry point for AI Symptom Analysis.
+ * Note: Next.js 15 "use server" files only allow exporting async functions.
+ */
 export async function aiSymptomAnalysisAndRecommendation(
   input: AiSymptomAnalysisInput
 ): Promise<AiSymptomAnalysisOutput> {
@@ -71,15 +76,10 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     outputSchema: AiSymptomAnalysisOutputSchema,
   },
   async (input) => {
-    try {
-      const { output } = await prompt(input);
-      if (!output) {
-        throw new Error('The AI was unable to generate a valid medical assessment.');
-      }
-      return output;
-    } catch (error: any) {
-      console.error("Genkit Flow Error:", error);
-      throw new Error(error.message || 'An error occurred during AI analysis.');
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error('The AI was unable to generate a valid medical assessment. Please provide more detail.');
     }
+    return output;
   }
 );
