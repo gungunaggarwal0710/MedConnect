@@ -1,307 +1,128 @@
+
 {
   "entities": {
     "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user's profile information, including personal details and contact information.",
+      "description": "Represents a user's account, including role-based profile data for patients and doctors.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
+          "description": "Unique identifier for the user (Firebase UID)."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["patient", "doctor", "admin"],
+          "description": "The user's primary role on the platform."
         },
         "name": {
           "type": "string",
           "description": "The full name of the user."
         },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address (mainly for doctors)."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The user's contact phone number."
+        },
         "age": {
           "type": "number",
-          "description": "The age of the user in years."
+          "description": "Patient age in years."
         },
-        "phone": {
+        "licenseNumber": {
           "type": "string",
-          "description": "The contact phone number of the user."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "age",
-        "phone"
-      ]
-    },
-    "EmergencyContact": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "EmergencyContact",
-      "type": "object",
-      "description": "Represents an emergency contact for a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the EmergencyContact entity."
+          "description": "Medical license number (doctors only)."
         },
-        "userId": {
+        "specialty": {
           "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N EmergencyContact)"
+          "description": "Medical specialty (doctors only)."
         },
-        "name": {
+        "hospitalId": {
           "type": "string",
-          "description": "The full name of the emergency contact."
+          "description": "Reference to the Hospital entity (doctors only)."
         },
-        "phone": {
-          "type": "string",
-          "description": "The contact phone number of the emergency contact."
+        "emergencyContacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "phone": { "type": "string" },
+              "relation": { "type": "string" }
+            }
+          },
+          "description": "List of emergency contacts (patients only)."
         },
-        "relation": {
+        "createdAt": {
           "type": "string",
-          "description": "The relationship of the emergency contact to the user (e.g., 'parent', 'sibling', 'friend')."
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "name",
-        "phone",
-        "relation"
-      ]
-    },
-    "MedicalHistoryEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MedicalHistoryEntry",
-      "type": "object",
-      "description": "Represents a single entry in a user's medical history.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the MedicalHistoryEntry entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N MedicalHistoryEntry)"
-        },
-        "date": {
-          "type": "string",
-          "description": "The date of the medical entry.",
           "format": "date-time"
-        },
-        "symptoms": {
-          "type": "string",
-          "description": "A description of the symptoms experienced during this medical event."
-        },
-        "diagnosis": {
-          "type": "string",
-          "description": "The medical diagnosis made for this entry."
-        },
-        "prescription": {
-          "type": "string",
-          "description": "Details of the prescribed medication or treatment for this entry."
         }
       },
       "required": [
         "id",
-        "userId",
-        "date",
-        "symptoms",
-        "diagnosis",
-        "prescription"
+        "role",
+        "name",
+        "phone"
       ]
     },
     "Doctor": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Doctor",
       "type": "object",
-      "description": "Represents a medical doctor available on the platform.",
+      "description": "Publicly viewable doctor information.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Doctor entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the doctor."
-        },
-        "specialty": {
-          "type": "string",
-          "description": "The medical specialty of the doctor (e.g., 'Cardiologist', 'Pediatrician')."
-        },
-        "hospitalId": {
-          "type": "string",
-          "description": "Reference to the Hospital where the doctor primarily practices. (Relationship: Hospital 1:N Doctor)"
-        },
-        "rating": {
-          "type": "number",
-          "description": "The average rating of the doctor, typically on a scale (e.g., out of 5)."
-        },
-        "fee": {
-          "type": "number",
-          "description": "The consultation fee charged by the doctor."
-        },
-        "availability": {
-          "type": "array",
-          "description": "An array of available time slots or dates for appointments (e.g., '2024-07-20T09:00:00Z', 'Monday 09:00-12:00').",
-          "items": {
-            "type": "string"
-          }
-        },
-        "locationLatitude": {
-          "type": "number",
-          "description": "The geographical latitude coordinate of the doctor's practice location."
-        },
-        "locationLongitude": {
-          "type": "number",
-          "description": "The geographical longitude coordinate of the doctor's practice location."
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "specialty": { "type": "string" },
+        "hospitalId": { "type": "string" },
+        "rating": { "type": "number" },
+        "fee": { "type": "number" },
+        "availability": { "type": "array", "items": { "type": "string" } },
+        "locationLatitude": { "type": "number" },
+        "locationLongitude": { "type": "number" }
       },
-      "required": [
-        "id",
-        "name",
-        "specialty",
-        "hospitalId",
-        "rating",
-        "fee",
-        "availability",
-        "locationLatitude",
-        "locationLongitude"
-      ]
+      "required": ["id", "name", "specialty", "hospitalId"]
     },
     "Hospital": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Hospital",
       "type": "object",
-      "description": "Represents a healthcare facility with real-time bed tracking capabilities.",
+      "description": "Represents a healthcare facility.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Hospital entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the hospital."
-        },
-        "bedsAvailable": {
-          "type": "number",
-          "description": "The current number of general hospital beds available."
-        },
-        "icuBeds": {
-          "type": "number",
-          "description": "The current number of ICU (Intensive Care Unit) beds available."
-        },
-        "ventilatorCount": {
-          "type": "number",
-          "description": "The current number of ventilators available."
-        },
-        "locationLatitude": {
-          "type": "number",
-          "description": "The geographical latitude coordinate of the hospital."
-        },
-        "locationLongitude": {
-          "type": "number",
-          "description": "The geographical longitude coordinate of the hospital."
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "bedsAvailable": { "type": "number" },
+        "icuBeds": { "type": "number" },
+        "ventilatorCount": { "type": "number" },
+        "locationLatitude": { "type": "number" },
+        "locationLongitude": { "type": "number" }
       },
-      "required": [
-        "id",
-        "name",
-        "bedsAvailable",
-        "icuBeds",
-        "ventilatorCount",
-        "locationLatitude",
-        "locationLongitude"
-      ]
+      "required": ["id", "name"]
     },
     "Appointment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Appointment",
       "type": "object",
-      "description": "Represents a scheduled appointment between a user and a doctor at a hospital.",
+      "description": "Represents a scheduled appointment.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Appointment entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who booked the appointment. (Relationship: UserProfile 1:N Appointment)"
-        },
-        "doctorId": {
-          "type": "string",
-          "description": "Reference to the Doctor for this appointment. (Relationship: Doctor 1:N Appointment)"
-        },
-        "hospitalId": {
-          "type": "string",
-          "description": "Reference to the Hospital where the appointment will take place. (Relationship: Hospital 1:N Appointment)"
-        },
-        "dateTime": {
-          "type": "string",
-          "description": "The scheduled date and time of the appointment.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the appointment (e.g., 'booked', 'confirmed', 'completed', 'cancelled')."
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "hospitalId": { "type": "string" },
+        "dateTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
       },
-      "required": [
-        "id",
-        "userId",
-        "doctorId",
-        "hospitalId",
-        "dateTime",
-        "status"
-      ]
-    },
-    "BloodDonor": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BloodDonor",
-      "type": "object",
-      "description": "Represents an individual registered as a blood donor.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the BloodDonor entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the blood donor."
-        },
-        "bloodGroup": {
-          "type": "string",
-          "description": "The blood group of the donor (e.g., 'A+', 'O-', 'AB+')."
-        },
-        "locationLatitude": {
-          "type": "number",
-          "description": "The geographical latitude coordinate of the donor's current or preferred donation location."
-        },
-        "locationLongitude": {
-          "type": "number",
-          "description": "The geographical longitude coordinate of the donor's current or preferred donation location."
-        },
-        "phone": {
-          "type": "string",
-          "description": "The contact phone number of the blood donor."
-        },
-        "availability": {
-          "type": "array",
-          "description": "An array of available time slots or dates for blood donation (e.g., '2024-07-25', 'Weekends').",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "bloodGroup",
-        "locationLatitude",
-        "locationLongitude",
-        "phone",
-        "availability"
-      ]
+      "required": ["id", "userId", "doctorId", "hospitalId", "dateTime", "status"]
     }
   },
   "auth": {
     "providers": [
       "password",
+      "phone",
       "anonymous"
     ]
   },
@@ -314,13 +135,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores a user's profile information, including embedded arrays for emergency contacts and medical history, and an array of references to their appointments. Authorization is path-based: `request.auth.uid == userId`.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, corresponding to Firebase Authentication UID."
-            }
-          ]
+          "description": "Private user profiles. Access restricted to the owner or admins."
         }
       },
       {
@@ -330,13 +145,7 @@
           "schema": {
             "$ref": "#/backend/entities/Doctor"
           },
-          "description": "Stores information about a medical doctor available on the platform. This collection is publicly readable, with write access typically restricted to administrators. No hierarchical authorization dependencies.",
-          "params": [
-            {
-              "name": "doctorId",
-              "description": "The unique identifier for the doctor."
-            }
-          ]
+          "description": "Public doctor profiles."
         }
       },
       {
@@ -346,64 +155,9 @@
           "schema": {
             "$ref": "#/backend/entities/Hospital"
           },
-          "description": "Stores information about healthcare facilities, including real-time bed tracking. This collection is publicly readable, with write access typically restricted to administrators. No hierarchical authorization dependencies.",
-          "params": [
-            {
-              "name": "hospitalId",
-              "description": "The unique identifier for the hospital."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/appointments/{appointmentId}",
-        "definition": {
-          "entityName": "Appointment",
-          "schema": {
-            "$ref": "#/backend/entities/Appointment"
-          },
-          "description": "Stores details of a scheduled appointment. Includes denormalized 'userId', 'doctorId', and 'hospitalId' for efficient authorization and querying without hierarchical dependencies. Access is granted to the associated user and doctor.",
-          "params": [
-            {
-              "name": "appointmentId",
-              "description": "The unique identifier for the appointment."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/bloodDonors/{donorId}",
-        "definition": {
-          "entityName": "BloodDonor",
-          "schema": {
-            "$ref": "#/backend/entities/BloodDonor"
-          },
-          "description": "Stores information about individuals registered as blood donors. This collection is publicly readable, with write access typically restricted to administrators or the donor themselves. No hierarchical authorization dependencies.",
-          "params": [
-            {
-              "name": "donorId",
-              "description": "The unique identifier for the blood donor."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{userId}",
-        "definition": {
-          "entityName": "AdminRole",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Used for Database Access Control (DBAC). The existence of a document at this path signifies that the corresponding 'userId' has administrator privileges. Authorization is independent, relying solely on `exists(/roles_admin/$(request.auth.uid))`.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who holds an administrator role."
-            }
-          ]
+          "description": "Public hospital data."
         }
       }
-    ],
-    "reasoning": "The recommended Firestore structure for MedConnect+ prioritizes security, scalability, and debuggability by adhering to the core design principles and specific mandates, while strictly implementing the provided 'Exact Schema' for document structure. \n\n**Authorization Independence (CRITICAL):**\n\n1.  **User-specific data (`/users/{userId}`):** All private user data, including their `UserProfile`, embedded `emergencyContacts`, and embedded `medicalHistory` entries, are stored within the `/users/{userId}` document. Authorization for this document and its contents is strictly path-based: `request.auth.uid == userId`. This makes the `UserProfile` document self-contained for authorization purposes, eliminating the need for `get()` calls to a parent document. Since emergency contacts and medical history entries are embedded arrays, their access rights are directly inherited from the parent `UserProfile` document, simplifying rules. The `appointments` field, storing an array of references, is also protected by the same user-specific rule.\n2.  **Appointments (`/appointments/{appointmentId}`):** The `Appointment` document explicitly includes `userId`, `doctorId`, and `hospitalId` fields. This denormalization is crucial for Authorization Independence. Security rules can directly check `request.auth.uid == resource.data.userId` (for the user) or `request.auth.uid == resource.data.doctorId` (for the doctor) without performing any cross-collection `get()` operations. This ensures atomic operations and simplifies rule debugging.\n3.  **Public/Global Data (`/doctors/{doctorId}`, `/hospitals/{hospitalId}`, `/bloodDonors/{donorId}`):** These collections store entities that are generally publicly readable but may have restricted write access (e.g., for administrators). Their security posture is self-contained, requiring no dependencies on other documents for authorization.\n4.  **Admin Roles (`/roles_admin/{userId}`):** This collection uses the DBAC (Database Access Control) pattern. The mere existence of a document at `/roles_admin/{request.auth.uid}` grants admin privileges. This is an authorization-independent check, using `exists()`, but on a dedicated collection specifically for roles, not on data collections.\n\n**QAPs (Queries Are Not Filters) Support:**\n\n1.  **User-specific data (`/users/{userId}`):** A user can only `get` or `list` their own `/users/{userId}` document. This inherently enforces that any query for user profile data is already filtered by the authenticated user's UID by virtue of the path structure.\n2.  **Appointments (`/appointments/{appointmentId}`):** For a user to retrieve their appointments, their client-side query *must* include a `where('userId', '==', request.auth.uid)` clause. Similarly, for a doctor, a `where('doctorId', '==', request.auth.uid)` clause would be required. Firestore security rules will enforce these query filters, preventing unauthorized access or accidental exposure of other users' or doctors' appointments. The denormalized `userId` and `doctorId` fields facilitate these secure `list` operations.\n3.  **Public/Global Data (`/doctors`, `/hospitals`, `/bloodDonors`):** These collections are intended for general public lookup (e.g., 'Cardiologist near me', 'Hospitals with beds'). As they are publicly readable, `list` operations are inherently secure and do not require additional filtering by security rules based on the requesting user's identity (though client-side filters can still be applied for display purposes)."
+    ]
   }
 }
