@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for AI symptom analysis and recommendation.
@@ -29,10 +30,10 @@ export type AiSymptomAnalysisInput = z.infer<
 >;
 
 const AiSymptomAnalysisOutputSchema = z.object({
-  analysis: z.string().describe('A preliminary analysis of the reported symptoms and/or image.'),
-  risks: z.string().describe('Potential health risks associated with the condition.'),
+  analysis: z.string().describe('A detailed preliminary analysis of the reported symptoms and/or image.'),
+  risks: z.string().describe('Potential immediate or long-term health risks associated with the condition.'),
   specialistRecommendation:
-    z.string().describe('Recommendation for an appropriate medical specialist to consult.'),
+    z.string().describe('The specific type of medical specialist the user should consult (e.g., Cardiologist, Dermatologist).'),
 });
 
 export type AiSymptomAnalysisOutput = z.infer<
@@ -53,20 +54,21 @@ const prompt = ai.definePrompt({
   name: 'symptomAnalysisPrompt',
   input: { schema: AiSymptomAnalysisInputSchema },
   output: { schema: AiSymptomAnalysisOutputSchema },
-  prompt: `You are MedConnect+, an expert AI medical consultant. Your goal is to analyze user symptoms and medical images to provide a structured preliminary assessment.
+  prompt: `You are MedConnect+, an expert AI medical consultant with advanced diagnostic knowledge. 
+Your goal is to analyze user symptoms and medical images to provide a structured, professional preliminary assessment.
 
-CRITICAL: Always start by stating that this is an AI analysis and not professional medical advice. If you cannot determine anything clearly, provide general health guidance and emphasize seeing a doctor.
+CRITICAL MEDICAL DISCLAIMER: Always begin your analysis by explicitly stating that this is an AI-generated preliminary analysis for informational purposes only and NOT a substitute for professional medical advice, diagnosis, or treatment. Emphasize that for emergencies, the user should immediately contact emergency services or go to the nearest emergency room.
 
-User Symptoms: {{{symptoms}}}
-
+INPUT DATA:
+- Symptoms Description: {{{symptoms}}}
 {{#if photoDataUri}}
-Visual Evidence: {{media url=photoDataUri}}
+- Visual Evidence (Medical Image): {{media url=photoDataUri}}
 {{/if}}
 
-Please analyze the input and provide:
-1. Analysis: A detailed explanation of what the symptoms/images might indicate.
-2. Risks: Any immediate or long-term health concerns.
-3. Specialist Recommendation: The exact type of doctor the user should see.`,
+Please analyze the provided information carefully and provide:
+1. Analysis: A detailed, clear explanation of what the symptoms and/or visual evidence might indicate. Use professional yet accessible language.
+2. Risks: Clearly outline any immediate concerns (red flags) and potential long-term risks if the condition is left untreated.
+3. Specialist Recommendation: Recommend the specific type of medical specialist (e.g., Gastroenterologist, Orthopedic Surgeon) the user should consult for this specific set of issues.`,
 });
 
 const aiSymptomAnalysisFlow = ai.defineFlow(
@@ -76,10 +78,15 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     outputSchema: AiSymptomAnalysisOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('The AI was unable to generate a valid medical assessment. Please provide more detail.');
+    try {
+      const { output } = await prompt(input);
+      if (!output) {
+        throw new Error('The AI was unable to generate a valid medical assessment. The input might be too vague or the image unclear.');
+      }
+      return output;
+    } catch (error: any) {
+      console.error('Genkit Flow Error:', error);
+      throw new Error(error.message || 'An unexpected error occurred during medical analysis.');
     }
-    return output;
   }
 );

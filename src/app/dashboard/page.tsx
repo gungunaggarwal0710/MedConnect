@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/firebase";
 
 const healthData = [
   { day: 'Mon', bpm: 72, steps: 4000 },
@@ -36,6 +38,8 @@ const healthData = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useUser();
+
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
       <Navigation />
@@ -44,7 +48,9 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Health Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, John Doe</p>
+            <p className="text-muted-foreground tracking-tight">
+              Welcome back, <span className="text-foreground font-bold">{user?.displayName || "Member"}</span>
+            </p>
           </div>
           <Badge variant="secondary" className="px-3 py-1 bg-green-100 text-green-700">Profile: 92% Complete</Badge>
         </div>
@@ -116,7 +122,7 @@ export default function DashboardPage() {
                     { doctor: "Dr. Mark Wilson", dept: "General Physician", time: "Friday, 02:30 PM" },
                   ].map((apt, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border shadow-sm">
                         <User className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div>
