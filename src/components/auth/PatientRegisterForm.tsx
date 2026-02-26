@@ -184,7 +184,7 @@ export function PatientRegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="" {...field} disabled={showOtp || loading} maxLength={10} className="bg-white" />
+                    <Input placeholder="Contact Number" {...field} disabled={showOtp || loading} maxLength={10} className="bg-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
