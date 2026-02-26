@@ -1,49 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * PROTOTYPE RULES
-     * Allows authenticated users to manage their own profile and read public resources.
-     */
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // --- Collection Rules ---
-
-    match /users/{userId} {
-      allow get, list, write: if isOwner(userId);
-    }
-
-    match /doctors/{doctorId} {
-      allow read: if true;
-      allow write: if isSignedIn(); // Allow doctors to register themselves in prototype
-    }
-
-    match /hospitals/{hospitalId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    match /appointments/{appointmentId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /roles_admin/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow write: if false; 
-    }
-    
-    // Catch-all for other collections in prototype
     match /{document=**} {
-      allow read, write: if isSignedIn();
+      allow read, write: if true;
     }
   }
 }

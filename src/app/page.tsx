@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Stethoscope,
   HeartPulse,
-  Droplets,
   Video,
   UserPlus,
   Hospital,
