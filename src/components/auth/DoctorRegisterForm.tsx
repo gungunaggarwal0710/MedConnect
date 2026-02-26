@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -91,7 +90,7 @@ export function DoctorRegisterForm() {
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Dr. Jane Smith" {...field} disabled={loading} />
+                <Input placeholder="" {...field} disabled={loading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,7 +105,7 @@ export function DoctorRegisterForm() {
               <FormItem>
                 <FormLabel>Work Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="dr.smith@hospital.com" {...field} type="email" disabled={loading} />
+                  <Input placeholder="" {...field} type="email" disabled={loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -119,7 +118,7 @@ export function DoctorRegisterForm() {
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="9876543210" {...field} maxLength={10} disabled={loading} />
+                  <Input placeholder="" {...field} maxLength={10} disabled={loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -135,7 +134,7 @@ export function DoctorRegisterForm() {
               <FormItem>
                 <FormLabel>Medical License #</FormLabel>
                 <FormControl>
-                  <Input placeholder="MC-12345" {...field} disabled={loading} />
+                  <Input placeholder="" {...field} disabled={loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

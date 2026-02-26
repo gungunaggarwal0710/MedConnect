@@ -33,7 +33,7 @@ export function PatientRegisterForm() {
     defaultValues: {
       name: "",
       phone: "",
-      age: 18,
+      age: undefined,
       emergencyContactName: "",
       emergencyContactPhone: "",
       otp: "",
@@ -118,7 +118,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your full name" {...field} disabled={showOtp || loading} />
+                  <Input placeholder="" {...field} disabled={showOtp || loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -149,7 +149,7 @@ export function PatientRegisterForm() {
                 <div className="flex gap-2">
                   <span className="flex items-center px-3 bg-muted rounded-md text-sm font-medium border border-input">+91</span>
                   <Input 
-                    placeholder="9876543210" 
+                    placeholder="" 
                     {...field} 
                     disabled={showOtp || loading}
                     maxLength={10}
@@ -184,7 +184,7 @@ export function PatientRegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Contact Phone" {...field} disabled={showOtp || loading} maxLength={10} className="bg-white" />
+                    <Input placeholder="" {...field} disabled={showOtp || loading} maxLength={10} className="bg-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
