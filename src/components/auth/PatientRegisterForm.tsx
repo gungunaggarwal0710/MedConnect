@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -15,6 +14,8 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { z } from "zod";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 export function PatientRegisterForm() {
   const { toast } = useToast();
@@ -70,8 +71,8 @@ export function PatientRegisterForm() {
     try {
       const result = await confirmationResult.confirm(data.otp);
       const userId = result.user.uid;
-
-      await setDoc(doc(db, "users", userId), {
+      const userDocRef = doc(db, "users", userId);
+      const userData = {
         id: userId,
         role: "patient",
         name: data.name,
@@ -81,10 +82,22 @@ export function PatientRegisterForm() {
           { name: data.emergencyContactName, phone: data.emergencyContactPhone, relation: "Emergency" }
         ],
         createdAt: serverTimestamp(),
-      });
+      };
 
-      toast({ title: "Account Created!", description: "Welcome to MedConnect+." });
-      router.push("/dashboard");
+      setDoc(userDocRef, userData)
+        .then(() => {
+          toast({ title: "Account Created!", description: "Welcome to MedConnect+." });
+          router.push("/dashboard");
+        })
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
     } catch (error: any) {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
     } finally {

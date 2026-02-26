@@ -1,13 +1,8 @@
-
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for AI symptom analysis and recommendation.
  * Users can input text symptoms and/or upload a medical image (e.g., rash/wound).
  * The AI will provide a preliminary analysis, potential risks, and recommend a medical specialist.
- *
- * - aiSymptomAnalysisAndRecommendation - The main function to call the AI symptom analysis flow.
- * - AiSymptomAnalysisInput - The input type for the aiSymptomAnalysisAndRecommendation function.
- * - AiSymptomAnalysisOutput - The return type for the aiSymptomAnalysisAndRecommendation function.
  */
 
 import { ai } from '@/ai/genkit';
@@ -42,7 +37,6 @@ export type AiSymptomAnalysisOutput = z.infer<
 
 /**
  * Main entry point for AI Symptom Analysis.
- * Note: Next.js 15 "use server" files only allow exporting async functions.
  */
 export async function aiSymptomAnalysisAndRecommendation(
   input: AiSymptomAnalysisInput
@@ -81,7 +75,7 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     try {
       const { output } = await prompt(input);
       if (!output) {
-        throw new Error('The AI was unable to generate a valid medical assessment. The input might be too vague or the image unclear.');
+        throw new Error('The AI was unable to generate a valid medical assessment. Please provide more detail.');
       }
       return output;
     } catch (error: any) {

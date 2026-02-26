@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -23,10 +22,6 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useUser } from "@/firebase";
 import { Badge } from "@/components/ui/badge";
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
-}
 
 export default function Home() {
   const { user } = useUser();
@@ -103,8 +98,7 @@ export default function Home() {
                 />
               </div>
               
-              {/* Floating feature cards */}
-              <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow">
+              <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-100 rounded-lg"><Stethoscope className="h-5 w-5 text-green-600" /></div>
                   <div className="text-xs">
@@ -114,7 +108,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="absolute -right-8 bottom-1/4 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow delay-700">
+              <div className="absolute -right-8 bottom-1/4 bg-white p-4 rounded-2xl shadow-xl">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg"><Activity className="h-5 w-5 text-blue-600" /></div>
                   <div className="text-xs">
@@ -138,7 +132,7 @@ export default function Home() {
             <Link key={i} href={action.href}>
               <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center h-full border-none shadow-sm group">
                 <CardContent className="pt-8">
-                  <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300", action.color)}>
+                  <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 ${action.color}`}>
                     <action.icon className="h-8 w-8" />
                   </div>
                   <span className="font-bold text-base block group-hover:text-primary transition-colors">{action.label}</span>

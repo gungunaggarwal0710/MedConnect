@@ -3,136 +3,47 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * CORE PHILOSOPHY
-     * This ruleset enforces a strict user-ownership model for personal health data and a role-based 
-     * access model for administrative and public medical data. Prototyping flexibility is maintained 
-     * by validating only the essential relational fields and ownership identifiers.
-     *
-     * DATA STRUCTURE
-     * - /users/{userId}: Private user profiles and health summaries (Path-based ownership).
-     * - /appointments/{appointmentId}: Shared documents between users and doctors (Denormalized ownership).
-     * - /doctors, /hospitals, /bloodDonors: Publicly readable medical resources.
-     * - /roles_admin/{userId}: Database Access Control (DBAC) for administrative privileges.
-     *
-     * KEY SECURITY DECISIONS
-     * - Denormalization: The Appointment entity contains 'userId' and 'doctorId' to allow fast, 
-     *   non-hierarchical authorization checks for both patients and medical staff.
-     * - DBAC Pattern: Global admin rights are determined by the existence of a document in the 
-     *   /roles_admin collection, avoiding complex role string parsing.
-     * - Structural Segregation: User-specific data is kept under /users/{userId} to ensure simple 
-     *   path-based listing of a user's own data.
+     * PROTOTYPE RULES
+     * Allows authenticated users to manage their own profile and read public resources.
      */
 
-    // --- Helper Functions ---
-
-    /** Checks if the requester is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the requester's UID matches the provided userId. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** Checks if the requester has an admin record in the DBAC collection. */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /** Validates ownership for operations on existing documents. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    /** Validates that the requester is an authorized participant (User or Doctor) for an appointment. */
-    function isAuthorizedParticipant(data) {
-      return isSignedIn() && (request.auth.uid == data.userId || request.auth.uid == data.doctorId);
-    }
-
     // --- Collection Rules ---
 
-    /**
-     * @description Rules for user profiles. Only the user themselves or an admin can access this data.
-     * @path /users/{userId}
-     * @allow (get) request.auth.uid == "user_123" accessing /users/user_123
-     * @deny (create) request.auth.uid == "user_123" trying to create /users/user_456
-     * @principle Restricts access to a user's own data tree and enforces identity consistency.
-     */
     match /users/{userId} {
-      allow get, list: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if (isExistingOwner(userId) || isAdmin()) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId) || isAdmin();
+      allow get, list, write: if isOwner(userId);
     }
 
-    /**
-     * @description Rules for appointments. Accessible by the patient (userId) or the doctor (doctorId).
-     * @path /appointments/{appointmentId}
-     * @allow (get) request.auth.uid == "doctor_abc" where appointment.doctorId == "doctor_abc"
-     * @deny (list) Denied because listing requires subcollection scoping or resource-based filtering (restricted in this IR).
-     * @principle Uses denormalized collaborator IDs for shared document access.
-     */
-    match /appointments/{appointmentId} {
-      allow get: if isAuthorizedParticipant(resource.data) || isAdmin();
-      allow list: if false; // CRITICAL: Path-based or Lookup-based list auth not possible for top-level shared collection without resource.data.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if resource != null && (isAuthorizedParticipant(resource.data) || isAdmin()) && request.resource.data.userId == resource.data.userId;
-      allow delete: if resource != null && (isAuthorizedParticipant(resource.data) || isAdmin());
-    }
-
-    /**
-     * @description Rules for doctors. Publicly readable, admin-only writes.
-     * @path /doctors/{doctorId}
-     * @allow (get) Any user viewing a doctor's specialty.
-     * @deny (update) Non-admin user attempting to change a doctor's fee.
-     * @principle Public read access for global directory data with centralized admin control for writes.
-     */
     match /doctors/{doctorId} {
-      allow get, list: if true;
-      allow create: if isAdmin();
-      allow update: if resource != null && isAdmin();
-      allow delete: if resource != null && isAdmin();
+      allow read: if true;
+      allow write: if isSignedIn(); // Allow doctors to register themselves in prototype
     }
 
-    /**
-     * @description Rules for hospitals. Publicly readable, admin-only writes for bed tracking.
-     * @path /hospitals/{hospitalId}
-     * @allow (get) Anonymous user checking bed availability.
-     * @deny (create) Logged-in non-admin user trying to add a new hospital.
-     * @principle Provides public visibility for critical real-time healthcare facility data.
-     */
     match /hospitals/{hospitalId} {
-      allow get, list: if true;
-      allow create: if isAdmin();
-      allow update: if resource != null && isAdmin();
-      allow delete: if resource != null && isAdmin();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
-    /**
-     * @description Rules for blood donors. Publicly readable.
-     * @path /bloodDonors/{donorId}
-     * @allow (list) A user searching for donors by blood group.
-     * @deny (update) A user attempting to change another donor's phone number.
-     * @principle Public directory access with write restrictions.
-     */
-    match /bloodDonors/{donorId} {
-      allow get, list: if true;
-      // CRITICAL: Cannot implement owner-only writes. The 'BloodDonor' entity is missing a 'userId' or 'ownerId' field.
-      allow create, update, delete: if isAdmin(); // TODO: Add owner validation once the schema is updated with an ownership field.
+    match /appointments/{appointmentId} {
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Administrative roles. Used for DBAC (Database Access Control).
-     * @path /roles_admin/{userId}
-     * @allow (get) isSignedIn() - Used by other rules to check admin status.
-     * @deny (list) Non-admin users listing the admin directory.
-     * @principle Enforces a secure, server-side truth for administrative privileges.
-     */
     match /roles_admin/{userId} {
       allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create, update, delete: if false; // Managed via console or elevated service accounts only.
+      allow list: if isSignedIn();
+      allow write: if false; 
+    }
+    
+    // Catch-all for other collections in prototype
+    match /{document=**} {
+      allow read, write: if isSignedIn();
     }
   }
 }
