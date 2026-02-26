@@ -79,7 +79,6 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
       }
       return output;
     } catch (error: any) {
-      console.error('Genkit Flow Error:', error);
       throw new Error(error.message || 'An unexpected error occurred during medical analysis.');
     }
   }

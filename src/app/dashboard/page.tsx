@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
+import { useEffect, useState } from "react";
 
 const healthData = [
   { day: 'Mon', bpm: 72, steps: 4000 },
@@ -38,6 +39,11 @@ const healthData = [
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
@@ -88,23 +94,27 @@ export default function DashboardPage() {
                 <CardDescription>Daily step count over the last week</CardDescription>
               </CardHeader>
               <CardContent className="pt-6 h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={healthData}>
-                    <defs>
-                      <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                    <YAxis hide />
-                    <Tooltip 
-                      contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
-                    />
-                    <Area type="monotone" dataKey="steps" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorSteps)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {mounted ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={healthData}>
+                      <defs>
+                        <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                      <YAxis hide />
+                      <Tooltip 
+                        contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                      />
+                      <Area type="monotone" dataKey="steps" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorSteps)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="w-full h-full bg-muted animate-pulse rounded-lg" />
+                )}
               </CardContent>
             </Card>
 
