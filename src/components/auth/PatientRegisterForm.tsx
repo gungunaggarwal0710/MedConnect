@@ -118,7 +118,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} disabled={showOtp || loading} />
+                  <Input placeholder="Enter your full name" {...field} disabled={showOtp || loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
