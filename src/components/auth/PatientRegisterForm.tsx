@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore } from "@/firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { z } from "zod";
 import { errorEmitter } from "@/firebase/error-emitter";
@@ -33,7 +33,7 @@ export function PatientRegisterForm() {
     defaultValues: {
       name: "",
       phone: "",
-      age: undefined,
+      age: "" as any,
       emergencyContactName: "",
       emergencyContactPhone: "",
       otp: "",
@@ -118,7 +118,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} disabled={showOtp || loading} />
+                  <Input placeholder="Enter your name" {...field} disabled={showOtp || loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -131,7 +131,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Age</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} disabled={showOtp || loading} />
+                  <Input type="number" placeholder="Your age" {...field} disabled={showOtp || loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -149,7 +149,7 @@ export function PatientRegisterForm() {
                 <div className="flex gap-2">
                   <span className="flex items-center px-3 bg-muted rounded-md text-sm font-medium border border-input">+91</span>
                   <Input 
-                    placeholder="" 
+                    placeholder="Enter phone number" 
                     {...field} 
                     disabled={showOtp || loading}
                     maxLength={10}
