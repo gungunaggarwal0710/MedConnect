@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore } from "@/firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { useRouter } from "navigation";
+import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { z } from "zod";
 import { errorEmitter } from "@/firebase/error-emitter";
