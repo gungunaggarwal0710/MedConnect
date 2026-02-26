@@ -111,7 +111,7 @@ export function PatientLoginForm() {
                 <FormMessage />
               </FormItem>
             )}
-          )}
+          />
         )}
 
         <Button type="submit" className="w-full bg-primary" disabled={loading}>

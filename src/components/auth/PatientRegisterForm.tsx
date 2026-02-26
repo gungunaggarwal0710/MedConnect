@@ -7,13 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { patientRegisterSchema, type PatientRegisterValues } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore } from "@/firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
+import { z } from "zod";
 
 export function PatientRegisterForm() {
   const { toast } = useToast();
@@ -70,7 +71,6 @@ export function PatientRegisterForm() {
       const result = await confirmationResult.confirm(data.otp);
       const userId = result.user.uid;
 
-      // Create User Profile in Firestore
       await setDoc(doc(db, "users", userId), {
         id: userId,
         role: "patient",
@@ -193,7 +193,7 @@ export function PatientRegisterForm() {
                 <FormMessage />
               </FormItem>
             )}
-          )}
+          />
         )}
 
         <Button type="submit" className="w-full bg-primary h-12 text-lg" disabled={loading}>
@@ -204,5 +204,3 @@ export function PatientRegisterForm() {
     </Form>
   );
 }
-
-import { z } from "zod";
