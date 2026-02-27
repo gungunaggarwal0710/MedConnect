@@ -23,7 +23,7 @@ export function PatientLoginForm() {
   const recaptchaRef = useRef<HTMLDivElement>(null);
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
-  const form = useForm<PatientLoginValues>({
+  const form = useForm<PatientLoginValues & { otp: string }>({
     resolver: zodResolver(patientLoginSchema),
     defaultValues: {
       phone: "",
@@ -44,11 +44,10 @@ export function PatientLoginForm() {
     try {
       const phoneNumber = `+91${data.phone}`;
       if (!recaptchaVerifier.current) throw new Error("Recaptcha not initialized");
-      
       const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier.current);
       setConfirmationResult(result);
       setShowOtp(true);
-      toast({ title: "OTP Sent", description: "Please check your messages." });
+      toast({ title: "OTP Sent" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -56,15 +55,14 @@ export function PatientLoginForm() {
     }
   }
 
-  async function handleVerifyOtp(data: PatientLoginValues) {
+  async function handleVerifyOtp(data: PatientLoginValues & { otp: string }) {
     if (!confirmationResult || !data.otp) return;
     setLoading(true);
     try {
       await confirmationResult.confirm(data.otp);
-      toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
       router.push("/dashboard");
     } catch (error: any) {
-      toast({ title: "Invalid OTP", description: "Please check the code and try again.", variant: "destructive" });
+      toast({ title: "Invalid OTP", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -74,61 +72,30 @@ export function PatientLoginForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(showOtp ? handleVerifyOtp : handleSendOtp)} className="space-y-4">
         <div ref={recaptchaRef} />
-        
         <FormField
           control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <div className="flex gap-2">
-                  <span className="flex items-center px-3 bg-muted rounded-md text-sm font-medium border border-input">+91</span>
-                  <Input 
-                    placeholder="Enter phone number" 
-                    {...field} 
-                    disabled={showOtp || loading}
-                    maxLength={10}
-                  />
-                </div>
-              </FormControl>
+              <FormLabel>Phone</FormLabel>
+              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         {showOtp && (
           <FormField
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Enter 6-digit OTP</FormLabel>
-                <FormControl>
-                  <Input placeholder="123456" {...field} maxLength={6} disabled={loading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <FormItem><FormControl><Input {...field} maxLength={6} placeholder="123456" /></FormControl></FormItem>
             )}
           />
         )}
-
         <Button type="submit" className="w-full bg-primary" disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {showOtp ? "Verify OTP" : "Send OTP"}
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {showOtp ? "Login" : "Send OTP"}
         </Button>
-        
-        {showOtp && (
-          <Button 
-            type="button" 
-            variant="ghost" 
-            className="w-full text-xs" 
-            onClick={() => setShowOtp(false)}
-            disabled={loading}
-          >
-            Change Phone Number
-          </Button>
-        )}
       </form>
     </Form>
   );

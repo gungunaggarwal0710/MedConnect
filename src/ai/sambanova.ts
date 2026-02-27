@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview SambaNova Cloud API Service for MedConnect+
- * This file handles all direct interactions with the SambaNova LLM.
+ * This file handles direct interactions with the SambaNova LLM.
  */
 
 export async function sambanovaChat(prompt: string, systemPrompt?: string) {
@@ -10,7 +10,7 @@ export async function sambanovaChat(prompt: string, systemPrompt?: string) {
   const model = process.env.SAMBANOVA_MODEL || 'meta-llama-3.1-405b-instruct';
 
   if (!apiKey) {
-    throw new Error('SAMBANOVA_API_KEY is missing. Please add it to your environment variables.');
+    throw new Error('SAMBANOVA_API_KEY is missing. Please check your environment variables.');
   }
 
   const messages = [];
@@ -29,7 +29,7 @@ export async function sambanovaChat(prompt: string, systemPrompt?: string) {
       body: JSON.stringify({
         model: model,
         messages: messages,
-        temperature: 0.1, // Low temperature for accuracy
+        temperature: 0.1,
         max_tokens: 1000
       })
     });

@@ -30,7 +30,6 @@ export default function Home() {
       <Navigation />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Section */}
         <section className="py-8 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -42,7 +41,7 @@ export default function Home() {
                   Your Health, <span className="text-primary">Connected.</span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  Get instant medical assistance, AI-driven symptom analysis, and seamless hospital booking in one platform. Built for your safety.
+                  Get instant medical assistance, AI-driven symptom analysis, and seamless hospital booking.
                 </p>
               </div>
 
@@ -70,19 +69,6 @@ export default function Home() {
                   </Button>
                 )}
               </div>
-
-              <div className="flex items-center gap-6 pt-4">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white overflow-hidden shadow-sm">
-                      <img src={`https://picsum.photos/seed/${i}/40`} alt="User" />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-bold text-foreground">10k+</span> active users trust us daily.
-                </p>
-              </div>
             </div>
             
             <div className="relative hidden md:block aspect-square max-h-[500px]">
@@ -96,31 +82,10 @@ export default function Home() {
                   data-ai-hint="doctor clinic"
                 />
               </div>
-              
-              <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg"><Stethoscope className="h-5 w-5 text-green-600" /></div>
-                  <div className="text-xs">
-                    <p className="font-bold">Verified Doctors</p>
-                    <p className="text-muted-foreground">Top specialists</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute -right-8 bottom-1/4 bg-white p-4 rounded-2xl shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg"><Activity className="h-5 w-5 text-blue-600" /></div>
-                  <div className="text-xs">
-                    <p className="font-bold">Real-time Stats</p>
-                    <p className="text-muted-foreground">Health tracking</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* Quick Actions */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-6 py-12">
           {[
             { label: "Book Appointment", icon: Calendar, color: "bg-blue-100 text-blue-600", href: "/doctors" },
@@ -141,7 +106,6 @@ export default function Home() {
           ))}
         </section>
 
-        {/* Live Status Cards */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 py-12">
           <Card className="border-none shadow-md overflow-hidden bg-white group">
             <CardHeader className="pb-2">
@@ -150,12 +114,11 @@ export default function Home() {
                 <Badge className="bg-green-100 text-green-800 border-none">LIVE</Badge>
               </div>
               <CardTitle className="text-lg">Hospital Beds</CardTitle>
-              <CardDescription>Available nearby in real-time</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-end">
                 <span className="text-4xl font-black text-foreground">142</span>
-                <Link href="/hospitals" className="text-primary text-sm font-bold flex items-center group-hover:gap-2 transition-all">
+                <Link href="/hospitals" className="text-primary text-sm font-bold flex items-center">
                   View Map <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -169,12 +132,11 @@ export default function Home() {
                 <Badge variant="outline">MONTHLY</Badge>
               </div>
               <CardTitle className="text-lg text-blue-600">Health Score</CardTitle>
-              <CardDescription>Based on recent activities</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-end">
                 <span className="text-4xl font-black text-foreground">84<span className="text-lg text-muted-foreground font-medium">/100</span></span>
-                <Link href="/dashboard" className="text-blue-600 text-sm font-bold flex items-center group-hover:gap-2 transition-all">
+                <Link href="/dashboard" className="text-blue-600 text-sm font-bold flex items-center">
                   Details <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -188,12 +150,11 @@ export default function Home() {
                 <Badge className="bg-destructive text-white border-none">URGENT</Badge>
               </div>
               <CardTitle className="text-lg text-destructive">Emergency ETA</CardTitle>
-              <CardDescription>Nearest response team</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-end">
-                <span className="text-4xl font-black text-foreground">8 <span className="text-lg text-muted-foreground font-medium uppercase tracking-widest">mins</span></span>
-                <Link href="/emergency" className="text-destructive text-sm font-bold flex items-center group-hover:gap-2 transition-all">
+                <span className="text-4xl font-black text-foreground">8 <span className="text-lg text-muted-foreground font-medium">mins</span></span>
+                <Link href="/emergency" className="text-destructive text-sm font-bold flex items-center">
                   SOS Now <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>

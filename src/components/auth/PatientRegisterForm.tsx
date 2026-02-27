@@ -28,7 +28,7 @@ export function PatientRegisterForm() {
   const recaptchaRef = useRef<HTMLDivElement>(null);
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
-  const form = useForm<PatientRegisterValues & { otp?: string }>({
+  const form = useForm<PatientRegisterValues & { otp: string }>({
     resolver: zodResolver(patientRegisterSchema.extend({ otp: z.string().optional() })),
     defaultValues: {
       name: "",
@@ -53,11 +53,10 @@ export function PatientRegisterForm() {
     try {
       const phoneNumber = `+91${data.phone}`;
       if (!recaptchaVerifier.current) throw new Error("Recaptcha not initialized");
-      
       const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier.current);
       setConfirmationResult(result);
       setShowOtp(true);
-      toast({ title: "OTP Sent", description: "Verification code sent to your phone." });
+      toast({ title: "OTP Sent" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -65,7 +64,7 @@ export function PatientRegisterForm() {
     }
   }
 
-  async function onCompleteRegister(data: PatientRegisterValues & { otp?: string }) {
+  async function onCompleteRegister(data: PatientRegisterValues & { otp: string }) {
     if (!confirmationResult || !data.otp) return;
     setLoading(true);
     try {
@@ -78,28 +77,14 @@ export function PatientRegisterForm() {
         name: data.name,
         phone: data.phone,
         age: data.age,
-        emergencyContacts: [
-          { name: data.emergencyContactName, phone: data.emergencyContactPhone, relation: "Emergency" }
-        ],
+        emergencyContacts: [{ name: data.emergencyContactName, phone: data.emergencyContactPhone }],
         createdAt: serverTimestamp(),
       };
-
-      setDoc(userDocRef, userData)
-        .then(() => {
-          toast({ title: "Account Created!", description: "Welcome to MedConnect+." });
-          router.push("/dashboard");
-        })
-        .catch(async (serverError) => {
-          const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'create',
-            requestResourceData: userData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
-
+      await setDoc(userDocRef, userData);
+      toast({ title: "Welcome!" });
+      router.push("/dashboard");
     } catch (error: any) {
-      toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -109,109 +94,64 @@ export function PatientRegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(showOtp ? onCompleteRegister : onSendOtp)} className="space-y-4">
         <div ref={recaptchaRef} />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your name" {...field} disabled={showOtp || loading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="age"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Age</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="Enter age" {...field} disabled={showOtp || loading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl><Input {...field} placeholder="" /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <div className="flex gap-2">
-                  <span className="flex items-center px-3 bg-muted rounded-md text-sm font-medium border border-input">+91</span>
-                  <Input 
-                    placeholder="Enter phone number" 
-                    {...field} 
-                    disabled={showOtp || loading}
-                    maxLength={10}
-                  />
-                </div>
-              </FormControl>
+              <FormLabel>Phone</FormLabel>
+              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="age"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Age</FormLabel>
+              <FormControl><Input {...field} type="number" placeholder="" /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10 space-y-3">
-          <div className="flex items-center gap-2 text-destructive font-bold text-sm">
-            <ShieldAlert className="h-4 w-4" /> EMERGENCY CONTACT
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <FormField
-              control={form.control}
-              name="emergencyContactName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="Contact Name" {...field} disabled={showOtp || loading} className="bg-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="emergencyContactPhone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="Contact Number" {...field} disabled={showOtp || loading} maxLength={10} className="bg-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <div className="flex items-center gap-2 text-destructive font-bold text-sm"><ShieldAlert /> EMERGENCY</div>
+          <FormField
+            control={form.control}
+            name="emergencyContactPhone"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl><Input {...field} maxLength={10} placeholder="Contact number" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-
         {showOtp && (
           <FormField
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem className="animate-in fade-in slide-in-from-top-2">
-                <FormLabel>Enter 6-digit OTP</FormLabel>
-                <FormControl>
-                  <Input placeholder="123456" {...field} maxLength={6} disabled={loading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <FormItem><FormControl><Input {...field} maxLength={6} placeholder="123456" /></FormControl></FormItem>
             )}
           />
         )}
-
-        <Button type="submit" className="w-full bg-primary h-12 text-lg" disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-          {showOtp ? "Register Account" : "Verify Phone & Register"}
+        <Button type="submit" className="w-full bg-primary" disabled={loading}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {showOtp ? "Register" : "Verify & Register"}
         </Button>
       </form>
     </Form>
