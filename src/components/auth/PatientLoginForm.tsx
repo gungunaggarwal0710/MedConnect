@@ -85,7 +85,7 @@ export function PatientLoginForm() {
                 <div className="flex gap-2">
                   <span className="flex items-center px-3 bg-muted rounded-md text-sm font-medium border border-input">+91</span>
                   <Input 
-                    placeholder="" 
+                    placeholder="Enter phone number" 
                     {...field} 
                     disabled={showOtp || loading}
                     maxLength={10}

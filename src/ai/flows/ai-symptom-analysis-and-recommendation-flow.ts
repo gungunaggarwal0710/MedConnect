@@ -1,12 +1,12 @@
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for AI symptom analysis and recommendation.
- * Users can input text symptoms and/or upload a medical image (e.g., rash/wound).
- * The AI will provide a preliminary analysis, potential risks, and recommend a medical specialist.
+ * Migrated to use SambaNova Cloud API for high-accuracy Llama 3.1 405B analysis.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { sambanovaChat } from '@/ai/sambanova';
 
 const AiSymptomAnalysisInputSchema = z.object({
   symptoms: z
@@ -16,7 +16,7 @@ const AiSymptomAnalysisInputSchema = z.object({
     z.string()
       .optional()
       .describe(
-        "An optional photo of a medical condition (e.g., rash, wound), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+        "An optional photo of a medical condition (e.g., rash, wound), as a data URI."
       ),
 });
 
@@ -25,10 +25,10 @@ export type AiSymptomAnalysisInput = z.infer<
 >;
 
 const AiSymptomAnalysisOutputSchema = z.object({
-  analysis: z.string().describe('A detailed preliminary analysis of the reported symptoms and/or image.'),
-  risks: z.string().describe('Potential immediate or long-term health risks associated with the condition.'),
+  analysis: z.string().describe('A detailed preliminary analysis.'),
+  risks: z.string().describe('Potential health risks.'),
   specialistRecommendation:
-    z.string().describe('The specific type of medical specialist the user should consult (e.g., Cardiologist, Dermatologist).'),
+    z.string().describe('The specific type of medical specialist recommended.'),
 });
 
 export type AiSymptomAnalysisOutput = z.infer<
@@ -36,34 +36,13 @@ export type AiSymptomAnalysisOutput = z.infer<
 >;
 
 /**
- * Main entry point for AI Symptom Analysis.
+ * Main entry point for AI Symptom Analysis using SambaNova.
  */
 export async function aiSymptomAnalysisAndRecommendation(
   input: AiSymptomAnalysisInput
 ): Promise<AiSymptomAnalysisOutput> {
   return aiSymptomAnalysisFlow(input);
 }
-
-const prompt = ai.definePrompt({
-  name: 'symptomAnalysisPrompt',
-  input: { schema: AiSymptomAnalysisInputSchema },
-  output: { schema: AiSymptomAnalysisOutputSchema },
-  prompt: `You are MedConnect+, an expert AI medical consultant with advanced diagnostic knowledge. 
-Your goal is to analyze user symptoms and medical images to provide a structured, professional preliminary assessment.
-
-CRITICAL MEDICAL DISCLAIMER: Always begin your analysis by explicitly stating that this is an AI-generated preliminary analysis for informational purposes only and NOT a substitute for professional medical advice, diagnosis, or treatment. Emphasize that for emergencies, the user should immediately contact emergency services or go to the nearest emergency room.
-
-INPUT DATA:
-- Symptoms Description: {{{symptoms}}}
-{{#if photoDataUri}}
-- Visual Evidence (Medical Image): {{media url=photoDataUri}}
-{{/if}}
-
-Please analyze the provided information carefully and provide:
-1. Analysis: A detailed, clear explanation of what the symptoms and/or visual evidence might indicate. Use professional yet accessible language.
-2. Risks: Clearly outline any immediate concerns (red flags) and potential long-term risks if the condition is left untreated.
-3. Specialist Recommendation: Recommend the specific type of medical specialist (e.g., Gastroenterologist, Orthopedic Surgeon) the user should consult for this specific set of issues.`,
-});
 
 const aiSymptomAnalysisFlow = ai.defineFlow(
   {
@@ -72,14 +51,33 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     outputSchema: AiSymptomAnalysisOutputSchema,
   },
   async (input) => {
+    const systemPrompt = `You are MedConnect+, an expert AI medical consultant with advanced diagnostic knowledge. 
+Your goal is to analyze user symptoms and provide a structured preliminary assessment.
+
+CRITICAL MEDICAL DISCLAIMER: Always state that this is an AI-generated preliminary analysis and NOT a substitute for professional medical advice.
+
+RESPONSE FORMAT: You MUST return ONLY a JSON object with the following structure:
+{
+  "analysis": "A detailed explanation of findings.",
+  "risks": "Potential red flags and concerns.",
+  "specialistRecommendation": "The type of specialist to consult (e.g., Cardiologist)."
+}`;
+
+    const userPrompt = `Symptoms Description: ${input.symptoms}
+${input.photoDataUri ? "Note: A medical image was provided with this request." : ""}`;
+
     try {
-      const { output } = await prompt(input);
-      if (!output) {
-        throw new Error('The AI was unable to generate a valid medical assessment. Please provide more detail.');
-      }
-      return output;
+      const rawResponse = await sambanovaChat(userPrompt, systemPrompt);
+      
+      // Clean potential markdown formatting from LLM
+      const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : rawResponse;
+      const parsed = JSON.parse(jsonStr);
+      
+      return AiSymptomAnalysisOutputSchema.parse(parsed);
     } catch (error: any) {
-      throw new Error(error.message || 'An unexpected error occurred during medical analysis.');
+      console.error('SambaNova Flow Error:', error);
+      throw new Error('The AI was unable to generate a valid medical assessment at this time. Please try again with more details.');
     }
   }
 );

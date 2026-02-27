@@ -131,7 +131,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Age</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="Your age" {...field} disabled={showOtp || loading} />
+                  <Input type="number" placeholder="Enter age" {...field} disabled={showOtp || loading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
