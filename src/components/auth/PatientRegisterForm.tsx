@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -14,8 +15,6 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { z } from "zod";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
 
 export function PatientRegisterForm() {
   const { toast } = useToast();
@@ -56,7 +55,7 @@ export function PatientRegisterForm() {
       const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier.current);
       setConfirmationResult(result);
       setShowOtp(true);
-      toast({ title: "OTP Sent" });
+      toast({ title: "OTP Sent", description: "Verification code sent to your phone." });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -76,15 +75,15 @@ export function PatientRegisterForm() {
         role: "patient",
         name: data.name,
         phone: data.phone,
-        age: data.age,
+        age: Number(data.age),
         emergencyContacts: [{ name: data.emergencyContactName, phone: data.emergencyContactPhone }],
         createdAt: serverTimestamp(),
       };
       await setDoc(userDocRef, userData);
-      toast({ title: "Welcome!" });
+      toast({ title: "Welcome!", description: "Account created successfully." });
       router.push("/dashboard");
     } catch (error: any) {
-      toast({ title: "Failed", description: error.message, variant: "destructive" });
+      toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -100,7 +99,7 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Full Name</FormLabel>
-              <FormControl><Input {...field} placeholder="" /></FormControl>
+              <FormControl><Input {...field} placeholder="John Doe" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -111,7 +110,7 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone</FormLabel>
-              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" /></FormControl>
+              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -122,19 +121,29 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Age</FormLabel>
-              <FormControl><Input {...field} type="number" placeholder="" /></FormControl>
+              <FormControl><Input {...field} type="number" placeholder="25" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10 space-y-3">
-          <div className="flex items-center gap-2 text-destructive font-bold text-sm"><ShieldAlert /> EMERGENCY</div>
+          <div className="flex items-center gap-2 text-destructive font-bold text-sm"><ShieldAlert className="h-4 w-4" /> EMERGENCY CONTACT</div>
+          <FormField
+            control={form.control}
+            name="emergencyContactName"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl><Input {...field} placeholder="Contact Name" disabled={loading} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="emergencyContactPhone"
             render={({ field }) => (
               <FormItem>
-                <FormControl><Input {...field} maxLength={10} placeholder="Contact number" /></FormControl>
+                <FormControl><Input {...field} maxLength={10} placeholder="Contact phone number" disabled={loading} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -145,13 +154,23 @@ export function PatientRegisterForm() {
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem><FormControl><Input {...field} maxLength={6} placeholder="123456" /></FormControl></FormItem>
+              <FormItem>
+                <FormLabel>OTP Code</FormLabel>
+                <FormControl><Input {...field} maxLength={6} placeholder="123456" disabled={loading} /></FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         )}
         <Button type="submit" className="w-full bg-primary" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {showOtp ? "Register" : "Verify & Register"}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            showOtp ? "Complete Registration" : "Verify & Register"
+          )}
         </Button>
       </form>
     </Form>

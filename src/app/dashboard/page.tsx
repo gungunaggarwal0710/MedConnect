@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   XAxis, 
   YAxis, 
@@ -15,12 +16,11 @@ import {
   Heart, 
   Droplets, 
   Activity, 
-  Calendar, 
-  FileText, 
   TrendingUp,
   Clock,
   User,
-  ShieldAlert
+  ShieldAlert,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser } from "@/firebase";

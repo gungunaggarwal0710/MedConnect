@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -47,7 +48,7 @@ export function PatientLoginForm() {
       const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier.current);
       setConfirmationResult(result);
       setShowOtp(true);
-      toast({ title: "OTP Sent" });
+      toast({ title: "OTP Sent", description: "Please check your messages." });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -78,7 +79,9 @@ export function PatientLoginForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone</FormLabel>
-              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" /></FormControl>
+              <FormControl>
+                <Input {...field} maxLength={10} placeholder="Enter number" disabled={loading} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -88,13 +91,25 @@ export function PatientLoginForm() {
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem><FormControl><Input {...field} maxLength={6} placeholder="123456" /></FormControl></FormItem>
+              <FormItem>
+                <FormLabel>OTP Code</FormLabel>
+                <FormControl>
+                  <Input {...field} maxLength={6} placeholder="123456" disabled={loading} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         )}
         <Button type="submit" className="w-full bg-primary" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {showOtp ? "Login" : "Send OTP"}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            showOtp ? "Login" : "Send OTP"
+          )}
         </Button>
       </form>
     </Form>
