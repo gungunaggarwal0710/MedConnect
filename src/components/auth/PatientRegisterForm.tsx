@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -99,7 +98,7 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Full Name</FormLabel>
-              <FormControl><Input {...field} placeholder="John Doe" disabled={loading} /></FormControl>
+              <FormControl><Input {...field} placeholder="Enter your full name" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -110,7 +109,7 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone</FormLabel>
-              <FormControl><Input {...field} maxLength={10} placeholder="Enter number" disabled={loading} /></FormControl>
+              <FormControl><Input {...field} maxLength={10} placeholder="Enter phone number" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -121,7 +120,7 @@ export function PatientRegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Age</FormLabel>
-              <FormControl><Input {...field} type="number" placeholder="25" disabled={loading} /></FormControl>
+              <FormControl><Input {...field} type="number" placeholder="Enter age" disabled={loading} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -143,7 +142,7 @@ export function PatientRegisterForm() {
             name="emergencyContactPhone"
             render={({ field }) => (
               <FormItem>
-                <FormControl><Input {...field} maxLength={10} placeholder="Contact phone number" disabled={loading} /></FormControl>
+                <FormControl><Input {...field} maxLength={10} placeholder="Contact number" disabled={loading} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
