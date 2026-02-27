@@ -51,12 +51,12 @@ const aiSymptomAnalysisFlow = ai.defineFlow(
     outputSchema: AiSymptomAnalysisOutputSchema,
   },
   async (input) => {
-    const systemPrompt = `You are MedConnect+, an expert AI medical consultant with advanced diagnostic knowledge. 
-Your goal is to analyze user symptoms and provide a structured preliminary assessment.
+    const systemPrompt = `You are MedConnect+, an expert AI medical consultant. 
+Analyze the user's symptoms and provide a structured preliminary assessment.
 
 CRITICAL MEDICAL DISCLAIMER: Always state that this is an AI-generated preliminary analysis and NOT a substitute for professional medical advice.
 
-RESPONSE FORMAT: You MUST return ONLY a JSON object with the following structure:
+RESPONSE FORMAT: You MUST return ONLY a JSON object with this exact structure:
 {
   "analysis": "A detailed explanation of findings.",
   "risks": "Potential red flags and concerns.",
@@ -77,7 +77,11 @@ ${input.photoDataUri ? "Note: A medical image was provided with this request." :
       return AiSymptomAnalysisOutputSchema.parse(parsed);
     } catch (error: any) {
       console.error('SambaNova Flow Error:', error);
-      throw new Error('The AI was unable to generate a valid medical assessment at this time. Please try again with more details.');
+      // Surface more specific errors if it's a configuration issue
+      if (error.message?.includes('SAMBANOVA_API_KEY')) {
+        throw new Error('SambaNova API Key is missing. Please check your environment variables.');
+      }
+      throw new Error(error.message || 'The AI was unable to generate a valid medical assessment at this time.');
     }
   }
 );
