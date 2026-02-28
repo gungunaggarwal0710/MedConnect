@@ -12,10 +12,11 @@ import {
   ArrowRight,
   Stethoscope,
   HeartPulse,
-  Video,
   UserPlus,
   Hospital,
-  ShieldCheck
+  ShieldCheck,
+  Bot,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -30,6 +31,29 @@ export default function Home() {
     <div className="pb-24 pt-4 md:pt-24 bg-background min-h-screen">
       <Navigation />
       
+      {/* Floating AI Health Assistant Avatar */}
+      <Link 
+        href="/ai-chat" 
+        className="fixed bottom-24 right-6 z-50 md:bottom-10 md:right-10 group"
+      >
+        <div className="relative">
+          <div className="absolute -inset-3 bg-primary/20 rounded-full animate-ping group-hover:animate-none" />
+          <div className="relative bg-primary p-4 rounded-full shadow-2xl border-4 border-white group-hover:scale-110 transition-transform duration-300">
+            <Bot className="h-8 w-8 text-white" />
+          </div>
+          <div className="absolute -top-1 -right-1 bg-destructive text-white text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-white shadow-sm">
+            AI
+          </div>
+          
+          {/* Tooltip-like label */}
+          <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white px-3 py-1.5 rounded-lg shadow-xl border border-primary/10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden md:block">
+            <p className="text-xs font-bold text-primary flex items-center gap-1">
+              <Sparkles className="h-3 w-3" /> Ask Health Assistant
+            </p>
+          </div>
+        </div>
+      </Link>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <section className="py-8 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
