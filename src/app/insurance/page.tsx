@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,9 +11,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Plus, FileText, Send, Loader2, CreditCard, History, AlertCircle } from "lucide-react";
+import { 
+  ShieldCheck, 
+  Plus, 
+  FileText, 
+  Send, 
+  Loader2, 
+  CreditCard, 
+  History, 
+  AlertCircle,
+  Hospital as HospitalIcon,
+  CheckCircle2,
+  XCircle,
+  Info
+} from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { hospitals } from "@/app/hospitals/page";
 
 export default function InsurancePage() {
   const { user } = useUser();
@@ -202,6 +217,68 @@ export default function InsurancePage() {
               )}
             </section>
 
+            {/* Network Hospital Stats */}
+            <section>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <HospitalIcon className="text-primary h-5 w-5" /> Network Coverage
+              </h2>
+              <div className="grid gap-4">
+                {policies && policies.length > 0 ? (
+                  policies.map((policy) => {
+                    const compatibleHospitals = hospitals.filter(h => 
+                      h.acceptedInsurance.some(ins => ins.toLowerCase() === policy.provider.toLowerCase())
+                    );
+                    
+                    return (
+                      <Card key={`network-${policy.id}`} className="border-none shadow-sm overflow-hidden">
+                        <CardHeader className="py-4 bg-accent/30">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="h-4 w-4 text-primary" />
+                              <span className="font-bold text-sm">{policy.provider} Network</span>
+                            </div>
+                            <Badge variant="outline" className="bg-white">
+                              {compatibleHospitals.length} Compatible Hospitals
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <div className="space-y-3">
+                            {hospitals.map((hosp) => {
+                              const isCompatible = compatibleHospitals.some(ch => ch.id === hosp.id);
+                              return (
+                                <div key={hosp.id} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                                  <div className="flex items-center gap-3">
+                                    <HospitalIcon className="h-4 w-4 text-muted-foreground" />
+                                    <span>{hosp.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isCompatible ? (
+                                      <div className="flex items-center gap-1 text-primary">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        <span className="text-[10px] font-bold">COVERED</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-muted-foreground">
+                                        <XCircle className="h-4 w-4" />
+                                        <span className="text-[10px]">NOT IN NETWORK</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Add a policy to see compatible hospital networks.</p>
+                )}
+              </div>
+            </section>
+
             {/* Recent Claims */}
             <section>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -248,7 +325,7 @@ export default function InsurancePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-white/10 p-3 rounded-lg text-sm">
-                  Keep your digital policy card handy for hospital visits.
+                  Check the "Network Coverage" section to ensure your chosen hospital accepts your policy.
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg text-sm">
                   Claims are usually processed within 3-5 business days.
@@ -258,13 +335,13 @@ export default function InsurancePage() {
 
             <Card className="border-none shadow-sm bg-accent/50">
               <CardHeader>
-                <CardTitle className="text-sm font-bold flex items-center gap-2"><Send className="h-4 w-4" /> Need Help?</CardTitle>
+                <CardTitle className="text-sm font-bold flex items-center gap-2"><Info className="h-4 w-4" /> Policy Matching</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Having trouble with a claim? Our support team can assist you with your insurance providers.
+                  Our system automatically maps your active policies to the nearest network hospitals to save you time during emergencies.
                 </p>
-                <Button variant="outline" size="sm" className="w-full bg-white">Contact Support</Button>
+                <Button variant="outline" size="sm" className="w-full bg-white">View Hospital Map</Button>
               </CardContent>
             </Card>
           </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -11,11 +12,13 @@ import {
   ShieldCheck, 
   Navigation as NavIcon,
   Phone,
-  Search
+  Search,
+  CheckCircle2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-const hospitals = [
+export const hospitals = [
   {
     id: 1,
     name: "Apollo Multispecialty",
@@ -25,7 +28,8 @@ const hospitals = [
     ventilators: 3,
     distance: "1.2 km",
     rating: 4.8,
-    verified: true
+    verified: true,
+    acceptedInsurance: ["LIC", "Apollo Munich", "Star Health", "HDFC ERGO"]
   },
   {
     id: 2,
@@ -36,7 +40,8 @@ const hospitals = [
     ventilators: 1,
     distance: "3.5 km",
     rating: 4.6,
-    verified: true
+    verified: true,
+    acceptedInsurance: ["Star Health", "Max Bupa", "ICICI Lombard"]
   },
   {
     id: 3,
@@ -47,7 +52,8 @@ const hospitals = [
     ventilators: 0,
     distance: "5.8 km",
     rating: 4.7,
-    verified: true
+    verified: true,
+    acceptedInsurance: ["LIC", "Star Health", "Reliance General"]
   }
 ];
 
@@ -71,7 +77,6 @@ export default function HospitalsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* List Section */}
           <div className="space-y-6">
             {hospitals.map((hosp) => (
               <Card key={hosp.id} className="border-none shadow-md overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
@@ -90,7 +95,7 @@ export default function HospitalsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="bg-secondary/50 p-3 rounded-xl text-center">
                       <Activity className="h-4 w-4 text-blue-600 mx-auto mb-1" />
                       <p className="text-xs text-muted-foreground">General</p>
@@ -113,6 +118,18 @@ export default function HospitalsPage() {
                       </p>
                     </div>
                   </div>
+
+                  <div className="mb-6">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Accepted Insurance</p>
+                    <div className="flex flex-wrap gap-1">
+                      {hosp.acceptedInsurance.map((ins) => (
+                        <Badge key={ins} variant="secondary" className="bg-primary/5 text-primary text-[9px] py-0">
+                          {ins}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1 bg-white"><Phone className="h-4 w-4 mr-2" /> Call</Button>
                     <Button className="flex-1 bg-primary text-white"><NavIcon className="h-4 w-4 mr-2" /> Route</Button>
@@ -122,11 +139,9 @@ export default function HospitalsPage() {
             ))}
           </div>
 
-          {/* Map Section Simulation */}
           <div className="hidden lg:block h-[calc(100vh-200px)] sticky top-24 bg-white rounded-3xl shadow-xl overflow-hidden border">
             <div className="w-full h-full relative bg-muted flex items-center justify-center">
               <div className="absolute inset-0 bg-blue-100/50">
-                {/* Simulated map UI elements */}
                 <div className="absolute top-10 left-10 w-8 h-8 bg-primary rounded-full border-4 border-white shadow-lg animate-bounce" />
                 <div className="absolute top-40 left-60 w-8 h-8 bg-primary rounded-full border-4 border-white shadow-lg" />
                 <div className="absolute bottom-20 right-20 w-8 h-8 bg-destructive rounded-full border-4 border-white shadow-lg" />
@@ -147,8 +162,4 @@ export default function HospitalsPage() {
       </main>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }
