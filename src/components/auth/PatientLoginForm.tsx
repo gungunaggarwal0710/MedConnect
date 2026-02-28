@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { patientLoginSchema, type PatientLoginValues } from "@/lib/validation";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -19,51 +19,27 @@ export function PatientLoginForm() {
   const auth = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const recaptchaRef = useRef<HTMLDivElement>(null);
-  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
-  const form = useForm<PatientLoginValues & { otp: string }>({
+  const form = useForm<PatientLoginValues>({
     resolver: zodResolver(patientLoginSchema),
     defaultValues: {
-      phone: "",
-      otp: "",
+      email: "",
+      password: "",
     },
   });
 
-  useEffect(() => {
-    if (!recaptchaVerifier.current && recaptchaRef.current) {
-      recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaRef.current, {
-        size: "invisible",
-      });
-    }
-  }, [auth]);
-
-  async function handleSendOtp(data: PatientLoginValues) {
+  async function onSubmit(data: PatientLoginValues) {
     setLoading(true);
     try {
-      const phoneNumber = `+91${data.phone}`;
-      if (!recaptchaVerifier.current) throw new Error("Recaptcha not initialized");
-      const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier.current);
-      setConfirmationResult(result);
-      setShowOtp(true);
-      toast({ title: "OTP Sent", description: "Please check your messages." });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleVerifyOtp(data: PatientLoginValues & { otp: string }) {
-    if (!confirmationResult || !data.otp) return;
-    setLoading(true);
-    try {
-      await confirmationResult.confirm(data.otp);
+      await signInWithEmailAndPassword(auth, data.email, data.password);
+      toast({ title: "Login Successful", description: "Welcome back!" });
       router.push("/dashboard");
     } catch (error: any) {
-      toast({ title: "Invalid OTP", variant: "destructive" });
+      toast({ 
+        title: "Login Failed", 
+        description: "Invalid email or password.", 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
@@ -71,44 +47,43 @@ export function PatientLoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(showOtp ? handleVerifyOtp : handleSendOtp)} className="space-y-4">
-        <div ref={recaptchaRef} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="phone"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} maxLength={10} placeholder="Enter number" disabled={loading} />
+                <Input placeholder="email@example.com" {...field} type="email" disabled={loading} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        {showOtp && (
-          <FormField
-            control={form.control}
-            name="otp"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>OTP Code</FormLabel>
-                <FormControl>
-                  <Input {...field} maxLength={6} placeholder="123456" disabled={loading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input placeholder="********" {...field} type="password" disabled={loading} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" className="w-full bg-primary" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              Logging in...
             </>
           ) : (
-            showOtp ? "Login" : "Send OTP"
+            "Login as Patient"
           )}
         </Button>
       </form>
