@@ -65,7 +65,7 @@ export function DoctorRegisterForm() {
         specialty: data.specialty,
         hospitalId: data.hospitalId,
         rating: 5.0,
-        fee: 50,
+        fee: 500, // Updated to 500 Rupee default
         availability: ["Monday 9am-12pm"],
         locationLatitude: 0,
         locationLongitude: 0

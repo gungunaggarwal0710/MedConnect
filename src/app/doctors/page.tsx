@@ -28,10 +28,10 @@ const specialties = [
 ];
 
 const mockDoctors = [
-  { id: 1, name: "Dr. Emily Smith", specialty: "Cardiologist", rating: 4.9, reviews: 120, location: "New Delhi", fee: "$50", availability: "Today" },
-  { id: 2, name: "Dr. Mark Wilson", specialty: "Neurologist", rating: 4.7, reviews: 85, location: "Mumbai", fee: "$70", availability: "Tomorrow" },
-  { id: 3, name: "Dr. Sarah Johnson", specialty: "Pediatrician", rating: 4.8, reviews: 210, location: "Bangalore", fee: "$40", availability: "Next Week" },
-  { id: 4, name: "Dr. David Chen", specialty: "General Physician", rating: 4.5, reviews: 45, location: "Pune", fee: "$30", availability: "Today" },
+  { id: 1, name: "Dr. Emily Smith", specialty: "Cardiologist", rating: 4.9, reviews: 120, location: "New Delhi", fee: "₹800", availability: "Today" },
+  { id: 2, name: "Dr. Mark Wilson", specialty: "Neurologist", rating: 4.7, reviews: 85, location: "Mumbai", fee: "₹1200", availability: "Tomorrow" },
+  { id: 3, name: "Dr. Sarah Johnson", specialty: "Pediatrician", rating: 4.8, reviews: 210, location: "Bangalore", fee: "₹600", availability: "Next Week" },
+  { id: 4, name: "Dr. David Chen", specialty: "General Physician", rating: 4.5, reviews: 45, location: "Pune", fee: "₹500", availability: "Today" },
 ];
 
 export default function DoctorsPage() {

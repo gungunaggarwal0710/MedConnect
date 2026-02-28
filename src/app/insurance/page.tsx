@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -93,7 +92,7 @@ export default function InsurancePage() {
                 <div className="space-y-2">
                   <Label>Provider Name</Label>
                   <Input 
-                    placeholder="e.g. BlueCross, Aetna" 
+                    placeholder="e.g. LIC, Apollo Munich, Star Health" 
                     value={newPolicy.provider}
                     onChange={(e) => setNewPolicy({...newPolicy, provider: e.target.value})}
                   />
@@ -101,7 +100,7 @@ export default function InsurancePage() {
                 <div className="space-y-2">
                   <Label>Policy Number</Label>
                   <Input 
-                    placeholder="XYZ123456" 
+                    placeholder="POL-12345678" 
                     value={newPolicy.policyNumber}
                     onChange={(e) => setNewPolicy({...newPolicy, policyNumber: e.target.value})}
                   />
@@ -109,16 +108,16 @@ export default function InsurancePage() {
                 <div className="space-y-2">
                   <Label>Plan Name</Label>
                   <Input 
-                    placeholder="Silver Plus / Platinum Health" 
+                    placeholder="Family Floater / Gold Plan" 
                     value={newPolicy.planName}
                     onChange={(e) => setNewPolicy({...newPolicy, planName: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Coverage Amount ($)</Label>
+                  <Label>Coverage Amount (₹)</Label>
                   <Input 
                     type="number"
-                    placeholder="50000" 
+                    placeholder="500000" 
                     value={newPolicy.coverageAmount || ""}
                     onChange={(e) => setNewPolicy({...newPolicy, coverageAmount: Number(e.target.value)})}
                   />
@@ -156,7 +155,7 @@ export default function InsurancePage() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Coverage:</span>
-                          <span className="font-bold">${policy.coverageAmount?.toLocaleString()}</span>
+                          <span className="font-bold">₹{policy.coverageAmount?.toLocaleString()}</span>
                         </div>
                       </CardContent>
                       <CardFooter className="pt-0">
@@ -171,7 +170,7 @@ export default function InsurancePage() {
                             </DialogHeader>
                             <div className="space-y-4 pt-4">
                               <div className="space-y-2">
-                                <Label>Claim Amount ($)</Label>
+                                <Label>Claim Amount (₹)</Label>
                                 <Input 
                                   type="number" 
                                   placeholder="0.00"
@@ -182,7 +181,7 @@ export default function InsurancePage() {
                               <div className="space-y-2">
                                 <Label>Description</Label>
                                 <Input 
-                                  placeholder="e.g. Annual checkup, Blood tests"
+                                  placeholder="e.g. Hospitalization, Blood tests"
                                   value={newClaim.description}
                                   onChange={(e) => setNewClaim({...newClaim, description: e.target.value, policyId: policy.id})}
                                 />
@@ -227,7 +226,7 @@ export default function InsurancePage() {
                           </div>
                         </div>
                         <div className="text-right flex flex-col items-end gap-1">
-                          <span className="font-bold text-sm">${claim.amount?.toLocaleString()}</span>
+                          <span className="font-bold text-sm">₹{claim.amount?.toLocaleString()}</span>
                           <Badge variant="outline" className="text-[10px] uppercase tracking-tighter">
                             {claim.status}
                           </Badge>
