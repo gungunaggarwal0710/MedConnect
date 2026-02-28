@@ -69,6 +69,39 @@
         "phone"
       ]
     },
+    "InsurancePolicy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InsurancePolicy",
+      "type": "object",
+      "description": "Represents a patient's insurance policy.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "provider": { "type": "string" },
+        "policyNumber": { "type": "string" },
+        "planName": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "pending", "expired"] },
+        "coverageAmount": { "type": "number" },
+        "expiryDate": { "type": "string", "format": "date" }
+      },
+      "required": ["provider", "policyNumber", "status"]
+    },
+    "InsuranceClaim": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InsuranceClaim",
+      "type": "object",
+      "description": "Represents a claim filed against an insurance policy.",
+      "properties": {
+        "id": { "type": "string" },
+        "policyId": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["submitted", "processing", "approved", "rejected"] },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["policyId", "amount", "status"]
+    },
     "Doctor": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Doctor",
@@ -102,21 +135,6 @@
         "locationLongitude": { "type": "number" }
       },
       "required": ["id", "name"]
-    },
-    "Appointment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Appointment",
-      "type": "object",
-      "description": "Represents a scheduled appointment.",
-      "properties": {
-        "id": { "type": "string" },
-        "userId": { "type": "string" },
-        "doctorId": { "type": "string" },
-        "hospitalId": { "type": "string" },
-        "dateTime": { "type": "string", "format": "date-time" },
-        "status": { "type": "string" }
-      },
-      "required": ["id", "userId", "doctorId", "hospitalId", "dateTime", "status"]
     }
   },
   "auth": {
@@ -135,7 +153,27 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Private user profiles. Access restricted to the owner or admins."
+          "description": "Private user profiles."
+        }
+      },
+      {
+        "path": "/users/{userId}/insurance/{insuranceId}",
+        "definition": {
+          "entityName": "InsurancePolicy",
+          "schema": {
+            "$ref": "#/backend/entities/InsurancePolicy"
+          },
+          "description": "User's insurance policies."
+        }
+      },
+      {
+        "path": "/users/{userId}/claims/{claimId}",
+        "definition": {
+          "entityName": "InsuranceClaim",
+          "schema": {
+            "$ref": "#/backend/entities/InsuranceClaim"
+          },
+          "description": "Insurance claims filed by the user."
         }
       },
       {

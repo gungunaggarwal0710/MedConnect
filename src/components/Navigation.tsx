@@ -7,16 +7,17 @@ import {
   Home, 
   Search, 
   MessageSquare, 
-  Calendar, 
   User, 
   Hospital, 
   ShieldAlert,
   Activity,
-  LogIn
+  LogIn,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
@@ -24,6 +25,7 @@ const navItems = [
   { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   { icon: Search, label: "Doctors", href: "/doctors" },
   { icon: Hospital, label: "Hospitals", href: "/hospitals" },
+  { icon: ShieldCheck, label: "Insurance", href: "/insurance" },
   { icon: Activity, label: "Stats", href: "/dashboard" },
 ];
 
@@ -56,7 +58,6 @@ export function Navigation() {
           </Link>
         ))}
         
-        {/* Mobile Profile/Login Link */}
         <Link
           href={user ? "/profile" : "/login"}
           className={cn(
@@ -105,5 +106,3 @@ export function Navigation() {
     </nav>
   );
 }
-
-import { Button } from "@/components/ui/button";

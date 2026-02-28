@@ -15,7 +15,7 @@ import {
   Video,
   UserPlus,
   Hospital,
-  Activity
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -92,7 +92,7 @@ export default function Home() {
             { label: "Book Appointment", icon: Calendar, color: "bg-blue-100 text-blue-600", href: "/doctors" },
             { label: "Find Hospitals", icon: MapPin, color: "bg-green-100 text-green-600", href: "/hospitals" },
             { label: "AI Symptom Analysis", icon: MessageSquare, color: "bg-primary/10 text-primary", href: "/ai-chat" },
-            { label: "First Aid Videos", icon: Video, color: "bg-purple-100 text-purple-600", href: "/dashboard" },
+            { label: "Manage Insurance", icon: ShieldCheck, color: "bg-purple-100 text-purple-600", href: "/insurance" },
           ].map((action, i) => (
             <Link key={i} href={action.href}>
               <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center h-full border-none shadow-sm group">

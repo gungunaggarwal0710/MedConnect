@@ -231,7 +231,7 @@ export default function DashboardPage() {
                   <TrendingUp className="h-5 w-5 text-primary" /> Health Trends
                 </CardTitle>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className="text-[10px]">Heart Rate</Badge>
+                  <Badge variant="outline" className="text-[10px]">Activity Insights</Badge>
                 </div>
               </CardHeader>
               <CardContent className="h-[300px]">
@@ -297,7 +297,7 @@ export default function DashboardPage() {
             </Card>
 
             <Card className="border-none shadow-sm bg-destructive/10">
-              <CardHeader><CardTitle className="text-destructive text-sm font-bold flex items-center gap-2"><ShieldAlert /> AI Health Insights</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-destructive text-sm font-bold flex items-center gap-2"><ShieldAlert /> Health Alerts</CardTitle></CardHeader>
               <CardContent>
                 <p className="text-xs text-destructive-foreground">
                   {latest && latest.heartRate > 100 

@@ -29,7 +29,7 @@ export function PatientRegisterForm() {
       email: "",
       password: "",
       phone: "",
-      age: 18,
+      age: undefined as any, // Start with empty for uncontrolled warning fix
       emergencyContactName: "",
       emergencyContactPhone: "",
     },
@@ -89,7 +89,7 @@ export function PatientRegisterForm() {
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter your full name" disabled={loading} />
+                <Input {...field} placeholder="" disabled={loading} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -104,7 +104,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" placeholder="email@example.com" disabled={loading} />
+                  <Input {...field} type="email" placeholder="" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -117,7 +117,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input {...field} type="password" placeholder="Min 8 characters" disabled={loading} />
+                  <Input {...field} type="password" placeholder="" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -133,7 +133,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input {...field} maxLength={10} placeholder="10-digit number" disabled={loading} />
+                  <Input {...field} maxLength={10} placeholder="" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,7 +146,7 @@ export function PatientRegisterForm() {
               <FormItem>
                 <FormLabel>Age</FormLabel>
                 <FormControl>
-                  <Input {...field} type="number" placeholder="Years" disabled={loading} />
+                  <Input {...field} type="number" placeholder="" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -164,7 +164,7 @@ export function PatientRegisterForm() {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} placeholder="Contact Name" disabled={loading} />
+                  <Input {...field} placeholder="Contact Name" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -176,7 +176,7 @@ export function PatientRegisterForm() {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} maxLength={10} placeholder="Contact phone number" disabled={loading} />
+                  <Input {...field} maxLength={10} placeholder="Contact Number" disabled={loading} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
