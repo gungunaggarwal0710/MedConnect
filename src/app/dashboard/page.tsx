@@ -20,29 +20,89 @@ import {
   Clock,
   User,
   ShieldAlert,
-  FileText
+  FileText,
+  Plus,
+  Loader2,
+  Ruler
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { useEffect, useState } from "react";
+import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useToast } from "@/hooks/use-toast";
 
-const healthData = [
-  { day: 'Mon', bpm: 72, steps: 4000 },
-  { day: 'Tue', bpm: 75, steps: 6000 },
-  { day: 'Wed', bpm: 70, steps: 8500 },
-  { day: 'Thu', bpm: 68, steps: 5000 },
-  { day: 'Fri', bpm: 74, steps: 9200 },
-  { day: 'Sat', bpm: 71, steps: 11000 },
-  { day: 'Sun', bpm: 73, steps: 7500 },
-];
+const healthRecordSchema = z.object({
+  heartRate: z.coerce.number().min(30).max(250),
+  bloodPressure: z.string().regex(/^\d{2,3}\/\d{2,3}$/, "Format: 120/80"),
+  bloodGlucose: z.coerce.number().min(20).max(600),
+  weight: z.coerce.number().min(2).max(500),
+  height: z.coerce.number().min(30).max(300),
+});
+
+type HealthRecordValues = z.infer<typeof healthRecordSchema>;
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const db = useFirestore();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const statsQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, "users", user.uid, "health_records"),
+      orderBy("timestamp", "desc"),
+      limit(20)
+    );
+  }, [db, user?.uid]);
+
+  const { data: records, isLoading } = useCollection(statsQuery);
+
+  const form = useForm<HealthRecordValues>({
+    resolver: zodResolver(healthRecordSchema),
+    defaultValues: {
+      heartRate: 72,
+      bloodPressure: "120/80",
+      bloodGlucose: 90,
+      weight: 70,
+      height: 170,
+    },
+  });
+
+  const latest = records?.[0];
+  const chartData = [...(records || [])].reverse().map(r => ({
+    day: r.timestamp?.toDate ? new Date(r.timestamp.toDate()).toLocaleDateString('en-US', { weekday: 'short' }) : '---',
+    bpm: r.heartRate,
+    glucose: r.bloodGlucose,
+    weight: r.weight
+  }));
+
+  async function onSubmit(data: HealthRecordValues) {
+    if (!db || !user?.uid) return;
+    
+    const colRef = collection(db, "users", user.uid, "health_records");
+    addDocumentNonBlocking(colRef, {
+      ...data,
+      timestamp: serverTimestamp(),
+    });
+    
+    toast({ title: "Stats Recorded", description: "Your health metrics have been updated." });
+    setIsDialogOpen(false);
+    form.reset();
+  }
 
   if (!mounted) return null;
 
@@ -51,22 +111,102 @@ export default function DashboardPage() {
       <Navigation />
       
       <main className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold">Health Dashboard</h1>
             <p className="text-muted-foreground tracking-tight">
               Welcome back, <span className="text-foreground font-bold">{user?.displayName || "Member"}</span>
             </p>
           </div>
-          <Badge variant="secondary" className="px-3 py-1 bg-green-100 text-green-700">Profile: 92% Complete</Badge>
+          
+          <div className="flex items-center gap-3">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 shadow-lg">
+                  <Plus className="mr-2 h-4 w-4" /> Log New Stats
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Record Health Metrics</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="heartRate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Heart Rate (BPM)</FormLabel>
+                            <FormControl><Input type="number" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bloodPressure"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>BP (Systolic/Diastolic)</FormLabel>
+                            <FormControl><Input placeholder="120/80" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="bloodGlucose"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Blood Glucose (mg/dL)</FormLabel>
+                          <FormControl><Input type="number" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight (kg)</FormLabel>
+                            <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="height"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (cm)</FormLabel>
+                            <FormControl><Input type="number" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-primary mt-4">Save Entry</Button>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+            <Badge variant="secondary" className="px-3 py-1 bg-green-100 text-green-700">Live Health Sync</Badge>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
-            { label: "Heart Rate", value: "72", unit: "bpm", icon: Heart, color: "text-red-500" },
-            { label: "Blood Pressure", value: "120/80", unit: "mmHg", icon: Activity, color: "text-blue-500" },
-            { label: "Blood Glucose", value: "95", unit: "mg/dL", icon: Droplets, color: "text-amber-500" },
-            { label: "Weight", value: "74.5", unit: "kg", icon: TrendingUp, color: "text-green-500" },
+            { label: "Heart Rate", value: latest?.heartRate || "--", unit: "bpm", icon: Heart, color: "text-red-500" },
+            { label: "Blood Pressure", value: latest?.bloodPressure || "--/--", unit: "mmHg", icon: Activity, color: "text-blue-500" },
+            { label: "Blood Glucose", value: latest?.bloodGlucose || "--", unit: "mg/dL", icon: Droplets, color: "text-amber-500" },
+            { label: "Weight", value: latest?.weight || "--", unit: "kg", icon: TrendingUp, color: "text-green-500" },
+            { label: "Height", value: latest?.height || "--", unit: "cm", icon: Ruler, color: "text-purple-500" },
           ].map((stat, i) => (
             <Card key={i} className="border-none shadow-sm">
               <CardContent className="pt-6">
@@ -86,27 +226,36 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <Card className="border-none shadow-md overflow-hidden">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" /> Activity Trends
+                  <TrendingUp className="h-5 w-5 text-primary" /> Health Trends
                 </CardTitle>
+                <div className="flex gap-2">
+                  <Badge variant="outline" className="text-[10px]">Heart Rate</Badge>
+                </div>
               </CardHeader>
               <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={healthData}>
-                    <defs>
-                      <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="day" />
-                    <YAxis hide />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="steps" stroke="hsl(var(--primary))" fill="url(#colorSteps)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {isLoading ? (
+                  <div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
+                ) : chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="day" />
+                      <YAxis hide />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="bpm" stroke="hsl(var(--primary))" fill="url(#colorSteps)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">Log stats to see your activity trends.</div>
+                )}
               </CardContent>
             </Card>
 
@@ -116,18 +265,23 @@ export default function DashboardPage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
                     <User className="h-5 w-5 text-muted-foreground" />
-                    <div><p className="text-sm font-bold">Dr. Emily Smith</p><p className="text-xs">Tomorrow, 10:00 AM</p></div>
+                    <div><p className="text-sm font-bold">No Scheduled Visits</p><p className="text-xs">Book a doctor today</p></div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-none shadow-sm">
-                <CardHeader><CardTitle className="text-sm">Recent Records</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-sm">Recent Medical Logs</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <div><p className="text-sm font-bold">Physical Exam</p><p className="text-xs">Jan 12, 2024</p></div>
-                  </div>
+                  {records?.slice(0, 3).map((r, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-bold">Record Entry</p>
+                        <p className="text-xs">{r.timestamp?.toDate ? new Date(r.timestamp.toDate()).toLocaleDateString() : 'Just now'}</p>
+                      </div>
+                    </div>
+                  )) || <p className="text-xs text-muted-foreground">No recent logs.</p>}
                 </CardContent>
               </Card>
             </div>
@@ -137,14 +291,19 @@ export default function DashboardPage() {
             <Card className="bg-primary text-white border-none shadow-lg">
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Clock /> Reminders</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-white/10 p-3 rounded-lg text-sm font-medium">Multivitamin (08:00 AM)</div>
+                <div className="bg-white/10 p-3 rounded-lg text-sm font-medium">Log your daily weight</div>
+                <div className="bg-white/10 p-3 rounded-lg text-sm font-medium">Check glucose level (After meal)</div>
               </CardContent>
             </Card>
 
             <Card className="border-none shadow-sm bg-destructive/10">
-              <CardHeader><CardTitle className="text-destructive text-sm font-bold flex items-center gap-2"><ShieldAlert /> Risks</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-destructive text-sm font-bold flex items-center gap-2"><ShieldAlert /> AI Health Insights</CardTitle></CardHeader>
               <CardContent>
-                <p className="text-xs text-destructive-foreground">Elevated heart health risk detected based on activity.</p>
+                <p className="text-xs text-destructive-foreground">
+                  {latest && latest.heartRate > 100 
+                    ? "Your heart rate is slightly elevated. Consider practicing deep breathing or consulting Dr. Smith." 
+                    : "No critical health alerts detected at this time based on your logs."}
+                </p>
               </CardContent>
             </Card>
           </div>

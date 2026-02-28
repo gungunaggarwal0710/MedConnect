@@ -29,7 +29,7 @@ export function PatientRegisterForm() {
       email: "",
       password: "",
       phone: "",
-      age: "" as any,
+      age: 18,
       emergencyContactName: "",
       emergencyContactPhone: "",
     },
@@ -41,13 +41,9 @@ export function PatientRegisterForm() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // Update basic profile
       await updateProfile(user, { displayName: data.name });
-
-      // Send verification email
       await sendEmailVerification(user);
 
-      // Create Firestore record
       const userDocRef = doc(db, "users", user.uid);
       const userData = {
         id: user.uid,
