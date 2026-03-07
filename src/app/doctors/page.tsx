@@ -20,7 +20,7 @@ import {
   Award,
   Activity
 } from "lucide-react";
-import { Badge } from "@/badge";
+import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
 import {
   Dialog,
@@ -188,9 +188,11 @@ export default function DoctorsPage() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none rounded-3xl">
-                    <DialogHeader className="sr-only">
-                      <DialogTitle>{doc.name} - {doc.specialty}</DialogTitle>
-                      <DialogDescription>Full medical profile and qualifications for {doc.name}</DialogDescription>
+                    <DialogHeader className="p-8 pb-0">
+                      <DialogTitle className="text-2xl font-bold">{doc.name}</DialogTitle>
+                      <DialogDescription className="text-muted-foreground">
+                        {doc.specialty} Specialist • {doc.degree}
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="bg-primary p-8 text-white relative">
                       <div className="flex gap-6 items-center">

@@ -10,7 +10,7 @@ import { useState, useMemo } from "react";
 import { aiSymptomAnalysisAndRecommendation } from "@/ai/flows/ai-symptom-analysis-and-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
 import { mockDoctors } from "@/lib/mock-data";
-import { Badge } from "@/badge";
+import { Badge } from "@/components/ui/badge";
 
 type AnalysisResult = {
   analysis: string;
