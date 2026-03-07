@@ -1,14 +1,16 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity, RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity, RefreshCcw, Star, MapPin } from "lucide-react";
+import { useState, useMemo } from "react";
 import { aiSymptomAnalysisAndRecommendation } from "@/ai/flows/ai-symptom-analysis-and-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
+import { mockDoctors } from "@/lib/mock-data";
+import { Badge } from "@/badge";
 
 type AnalysisResult = {
   analysis: string;
@@ -63,6 +65,14 @@ export default function AIChatPage() {
       setLoading(false);
     }
   };
+
+  const recommendedDoctors = useMemo(() => {
+    if (!result) return [];
+    return mockDoctors
+      .filter(doc => doc.specialty === result.specialistRecommendation)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 3);
+  }, [result]);
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
@@ -181,14 +191,46 @@ export default function AIChatPage() {
 
                 <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                   <h3 className="font-bold text-sm text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4" /> Specialist Recommendation
+                    <Stethoscope className="h-4 w-4" /> Recommended Specialty
                   </h3>
                   <p className="text-sm font-semibold text-green-900">{result.specialistRecommendation}</p>
                 </div>
+
+                {recommendedDoctors.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Stethoscope className="h-4 w-4" /> Top Specialists for You
+                    </h3>
+                    <div className="grid gap-4">
+                      {recommendedDoctors.map((doc) => (
+                        <div key={doc.id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-transparent hover:border-primary/20 transition-all group">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border">
+                            <img src={`https://picsum.photos/seed/doc${doc.id}/200`} alt={doc.name} className="object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-sm truncate group-hover:text-primary transition-colors">{doc.name}</h4>
+                            <p className="text-[10px] text-muted-foreground truncate">{doc.degree}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-foreground">
+                                <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" /> {doc.rating}
+                              </span>
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <MapPin className="h-2.5 w-2.5" /> {doc.location.split(',')[0]}
+                              </span>
+                            </div>
+                          </div>
+                          <Button size="sm" className="h-8 bg-primary" asChild>
+                            <a href={`/doctors?specialty=${doc.specialty}`}>Book ₹{doc.fee}</a>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="bg-muted/30 pt-4 flex flex-col gap-3">
                 <Button className="w-full bg-primary" asChild>
-                  <a href="/doctors">Book Recommended Specialist</a>
+                  <a href={`/doctors?specialty=${result.specialistRecommendation}`}>Explore All Matching Specialists</a>
                 </Button>
                 <p className="text-[10px] text-muted-foreground text-center italic">
                   Analysis generated based on provided symptoms and image.
