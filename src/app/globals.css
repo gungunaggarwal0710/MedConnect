@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,6 +60,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'PT Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 }
