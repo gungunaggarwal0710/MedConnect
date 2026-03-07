@@ -51,6 +51,7 @@ const specialties = [
   { name: "Ophthalmology", icon: Eye },
   { name: "Orthopaedics", icon: User },
   { name: "Oncology", icon: Activity },
+  { name: "Obstetrics & Gynaecology", icon: Heart },
 ];
 
 const hospitals = [
@@ -59,7 +60,7 @@ const hospitals = [
   "Batra Hospital, Tughlakabad", 
   "Indraprastha Apollo Hospital, Sarita Vihar",
   "Max Hospital, Shalimar Bagh", 
-  "Batra Hospital, Okhla"
+  "Max Hospital, Patparganj"
 ];
 
 const mockDoctors = [
@@ -192,6 +193,110 @@ const mockDoctors = [
     fee: 1800, 
     availability: "Next Week",
     about: "Senior Consultant Neurosurgeon with expertise in brain tumor surgery and spine surgery."
+  },
+  { 
+    id: 11, 
+    name: "Dr. Sameer Kaul", 
+    specialty: "Oncology", 
+    degree: "MBBS, MS, MCh (Surgical Oncology)",
+    experience: 26,
+    rating: 4.9, 
+    reviews: 410, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 1500, 
+    availability: "Today",
+    about: "Specialized in breast and head-neck cancers with over two decades of clinical experience."
+  },
+  { 
+    id: 12, 
+    name: "Dr. Anupam Sibal", 
+    specialty: "Pediatrics", 
+    degree: "MBBS, MD (Pediatrics), MRCP",
+    experience: 30,
+    rating: 5.0, 
+    reviews: 1100, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 2000, 
+    availability: "Today",
+    about: "Group Medical Director at Apollo Hospitals and a pioneer in pediatric liver transplantation in India."
+  },
+  { 
+    id: 13, 
+    name: "Dr. Viney Jetley", 
+    specialty: "Cardiology", 
+    degree: "MBBS, MD, DM (Cardiology)",
+    experience: 25,
+    rating: 4.7, 
+    reviews: 290, 
+    location: "Batra Hospital, Tughlakabad", 
+    fee: 1100, 
+    availability: "Tomorrow",
+    about: "Expert in interventional cardiology with specialization in complex coronary interventions."
+  },
+  { 
+    id: 14, 
+    name: "Dr. Rajat Anand", 
+    specialty: "Ophthalmology", 
+    degree: "MBBS, MS (Ophthalmology)",
+    experience: 15,
+    rating: 4.6, 
+    reviews: 120, 
+    location: "Max Super Speciality Hospital, Saket", 
+    fee: 800, 
+    availability: "Today",
+    about: "Specialized in cataract surgery and medical retina with focus on diabetic retinopathy."
+  },
+  { 
+    id: 15, 
+    name: "Dr. Meena Chhabra", 
+    specialty: "Internal Medicine", 
+    degree: "MBBS, MD (General Medicine)",
+    experience: 24,
+    rating: 4.8, 
+    reviews: 560, 
+    location: "Max Hospital, Patparganj", 
+    fee: 1200, 
+    availability: "Tomorrow",
+    about: "Expert in metabolic disorders, hypertension, and preventive health screenings."
+  },
+  { 
+    id: 16, 
+    name: "Dr. Subrat Akhoury", 
+    specialty: "Cardiology", 
+    degree: "MBBS, MD, DM (Cardiology)",
+    experience: 20,
+    rating: 4.9, 
+    reviews: 330, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 1800, 
+    availability: "Today",
+    about: "Senior Interventional Cardiologist with extensive experience in balloon valvuloplasty and pacemaker implantation."
+  },
+  { 
+    id: 17, 
+    name: "Dr. B.K. Singh", 
+    specialty: "Orthopaedics", 
+    degree: "MBBS, MS (Orthopaedics)",
+    experience: 27,
+    rating: 4.7, 
+    reviews: 195, 
+    location: "Batra Hospital, Tughlakabad", 
+    fee: 1000, 
+    availability: "Next Week",
+    about: "Specialized in joint replacement, spinal disorders, and pediatric orthopaedics."
+  },
+  { 
+    id: 18, 
+    name: "Dr. Neerja Batla", 
+    specialty: "Obstetrics & Gynaecology", 
+    degree: "MBBS, MD, FICOG",
+    experience: 35,
+    rating: 5.0, 
+    reviews: 2100, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 2500, 
+    availability: "Tomorrow",
+    about: "Pioneer in gynecological oncology and preventive oncology with international recognition."
   }
 ];
 
@@ -232,7 +337,7 @@ export default function DoctorsPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Select value={selectedHospital} onValueChange={setSelectedHospital}>
                 <SelectTrigger className="w-[200px] bg-white border-none shadow-sm rounded-xl h-12">
                   <SelectValue placeholder="Location" />
