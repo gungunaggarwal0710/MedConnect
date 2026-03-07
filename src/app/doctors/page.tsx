@@ -21,7 +21,8 @@ import {
   History,
   Award,
   X,
-  ChevronRight
+  ChevronRight,
+  Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
