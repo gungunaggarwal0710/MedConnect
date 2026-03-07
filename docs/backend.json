@@ -155,6 +155,34 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["doctorId", "date", "time", "status"]
+    },
+    "Prescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prescription",
+      "type": "object",
+      "description": "Represents a digitized medical prescription.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "patientName": { "type": "string" },
+        "doctorName": { "type": "string" },
+        "date": { "type": "string" },
+        "medications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "dosage": { "type": "string" },
+              "instructions": { "type": "string" }
+            }
+          }
+        },
+        "diagnosis": { "type": "string" },
+        "additionalNotes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "medications", "createdAt"]
     }
   },
   "auth": {
@@ -204,6 +232,16 @@
             "$ref": "#/backend/entities/Appointment"
           },
           "description": "User's doctor appointments."
+        }
+      },
+      {
+        "path": "/users/{userId}/prescriptions/{prescriptionId}",
+        "definition": {
+          "entityName": "Prescription",
+          "schema": {
+            "$ref": "#/backend/entities/Prescription"
+          },
+          "description": "Digitized prescriptions saved by the user."
         }
       },
       {

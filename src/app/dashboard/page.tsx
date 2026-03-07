@@ -30,7 +30,8 @@ import {
   Upload,
   Sparkles,
   CheckCircle2,
-  Info
+  Info,
+  Save
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -70,6 +71,7 @@ export default function DashboardPage() {
   const [prescriptionImage, setPrescriptionImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PrescriptionReaderOutput | null>(null);
+  const [isSavingPrescription, setIsSavingPrescription] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -92,8 +94,18 @@ export default function DashboardPage() {
     );
   }, [db, user?.uid]);
 
+  const prescriptionsQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, "users", user.uid, "prescriptions"),
+      orderBy("createdAt", "desc"),
+      limit(10)
+    );
+  }, [db, user?.uid]);
+
   const { data: records, isLoading: isStatsLoading } = useCollection(statsQuery);
   const { data: appointments, isLoading: isAppointmentsLoading } = useCollection(appointmentsQuery);
+  const { data: prescriptions, isLoading: isPrescriptionsLoading } = useCollection(prescriptionsQuery);
 
   const form = useForm<HealthRecordValues>({
     resolver: zodResolver(healthRecordSchema),
@@ -154,6 +166,24 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSavePrescription = () => {
+    if (!db || !user?.uid || !analysisResult) return;
+    
+    setIsSavingPrescription(true);
+    const colRef = collection(db, "users", user.uid, "prescriptions");
+    
+    addDocumentNonBlocking(colRef, {
+      ...analysisResult,
+      createdAt: serverTimestamp(),
+    });
+
+    toast({ title: "Prescription Saved", description: "This prescription has been added to your medical records." });
+    setIsSavingPrescription(false);
+    setIsPrescriptionOpen(false);
+    setAnalysisResult(null);
+    setPrescriptionImage(null);
+  };
+
   if (!mounted) return null;
 
   return (
@@ -173,7 +203,7 @@ export default function DashboardPage() {
             <Dialog open={isPrescriptionOpen} onOpenChange={setIsPrescriptionOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 shadow-sm">
-                  <FileText className="mr-2 h-4 w-4" /> Read Prescription
+                  <FileText className="mr-2 h-4 w-4" /> AI Prescription Reader
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -272,10 +302,20 @@ export default function DashboardPage() {
 
                       <div className="flex gap-2">
                         <Button variant="outline" className="flex-1" onClick={() => setAnalysisResult(null)}>
-                          Upload Another
+                          Discard
                         </Button>
-                        <Button className="flex-1 bg-primary" onClick={() => setIsPrescriptionOpen(false)}>
-                          Done
+                        <Button 
+                          className="flex-1 bg-primary" 
+                          onClick={handleSavePrescription}
+                          disabled={isSavingPrescription}
+                        >
+                          {isSavingPrescription ? (
+                             <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" /> Save to Profile
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -402,21 +442,7 @@ export default function DashboardPage() {
                 {isStatsLoading ? (
                   <div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
                 ) : chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData}>
-                      <defs>
-                        <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="day" />
-                      <YAxis hide />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="bpm" stroke="hsl(var(--primary))" fill="url(#colorSteps)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <RefreshTrendChart data={chartData} />
                 ) : (
                   <div className="h-full flex items-center justify-center text-muted-foreground">Log stats to see your activity trends.</div>
                 )}
@@ -467,17 +493,38 @@ export default function DashboardPage() {
               </Card>
 
               <Card className="border-none shadow-sm">
-                <CardHeader><CardTitle className="text-sm">Recent Medical Logs</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-sm">Medical Records & Prescriptions</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
+                  {isPrescriptionsLoading ? (
+                    <div className="flex justify-center p-4"><Loader2 className="animate-spin h-4 w-4 text-primary" /></div>
+                  ) : prescriptions && prescriptions.length > 0 ? (
+                    prescriptions.map((presc) => (
+                      <div key={presc.id} className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate">Rx: {presc.doctorName || "Doctor"}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {presc.createdAt?.toDate ? new Date(presc.createdAt.toDate()).toLocaleDateString() : 'Just now'}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" className="text-[8px]">{presc.medications?.length} items</Badge>
+                      </div>
+                    ))
+                  ) : null}
+                  
                   {records?.slice(0, 3).map((r, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    <div key={`rec-${i}`} className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-bold">Record Entry</p>
+                        <p className="text-sm font-bold">Vital Signs Log</p>
                         <p className="text-xs">{r.timestamp?.toDate ? new Date(r.timestamp.toDate()).toLocaleDateString() : 'Just now'}</p>
                       </div>
                     </div>
-                  )) || <p className="text-xs text-muted-foreground">No recent logs.</p>}
+                  ))}
+                  
+                  {(!records || records.length === 0) && (!prescriptions || prescriptions.length === 0) && (
+                    <p className="text-xs text-muted-foreground text-center py-4">No recent logs found.</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -489,6 +536,11 @@ export default function DashboardPage() {
               <CardContent className="space-y-4">
                 <div className="bg-white/10 p-3 rounded-lg text-sm font-medium">Log your daily weight</div>
                 <div className="bg-white/10 p-3 rounded-lg text-sm font-medium">Check glucose level (After meal)</div>
+                {prescriptions && prescriptions.length > 0 && (
+                  <div className="bg-white/20 p-3 rounded-lg text-xs italic">
+                    You have active medications from your latest prescription.
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -497,7 +549,7 @@ export default function DashboardPage() {
               <CardContent>
                 <p className="text-xs text-destructive-foreground">
                   {latest && latest.heartRate > 100 
-                    ? "Your heart rate is slightly elevated. Consider practicing deep breathing or consulting Dr. Sandeep Budhiraja." 
+                    ? "Your heart rate is slightly elevated. Consider practicing deep breathing or consulting a specialist." 
                     : "No critical health alerts detected at this time based on your logs."}
                 </p>
               </CardContent>
@@ -506,5 +558,25 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function RefreshTrendChart({ data }: { data: any[] }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="day" />
+        <YAxis hide />
+        <Tooltip />
+        <Area type="monotone" dataKey="bpm" stroke="hsl(var(--primary))" fill="url(#colorSteps)" />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
