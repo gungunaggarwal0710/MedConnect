@@ -97,7 +97,6 @@ export default function DoctorsPage() {
       return;
     }
     
-    // In a real app, this would save to Firestore
     setIsBookingSuccess(true);
     toast({ 
       title: "Booking Confirmed!", 
@@ -312,15 +311,6 @@ export default function DoctorsPage() {
                 </Dialog>
 
                 <Dialog open={!!bookingDoctor} onOpenChange={(open) => !open && resetBooking()}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      size="sm" 
-                      className="flex-1 bg-primary text-white font-bold shadow-md hover:shadow-lg transition-all"
-                      onClick={() => setBookingDoctor(doc)}
-                    >
-                      Book Appointment
-                    </Button>
-                  </DialogTrigger>
                   <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none rounded-3xl max-h-[90vh] overflow-y-auto">
                     {!isBookingSuccess ? (
                       <div className="space-y-0">
@@ -339,7 +329,7 @@ export default function DoctorsPage() {
                             <Label className="text-sm font-bold flex items-center gap-2">
                               <CalendarIcon className="h-4 w-4 text-primary" /> Select Consultation Date
                             </Label>
-                            <div className="border rounded-2xl p-2 bg-muted/20">
+                            <div className="border rounded-2xl p-2 bg-muted/5">
                               <Calendar
                                 mode="single"
                                 selected={bookingDate}
