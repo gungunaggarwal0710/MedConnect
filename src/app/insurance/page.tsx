@@ -145,7 +145,6 @@ export default function InsurancePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Active Policies */}
             <section>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <ShieldCheck className="text-primary h-5 w-5" /> Your Policies
@@ -217,7 +216,6 @@ export default function InsurancePage() {
               )}
             </section>
 
-            {/* Network Hospital Stats */}
             <section>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <HospitalIcon className="text-primary h-5 w-5" /> Network Coverage
@@ -279,7 +277,6 @@ export default function InsurancePage() {
               </div>
             </section>
 
-            {/* Recent Claims */}
             <section>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <History className="text-primary h-5 w-5" /> Recent Claims

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -45,7 +46,6 @@ export function DoctorRegisterForm() {
       const result = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const userId = result.user.uid;
 
-      // Create Doctor Profile in Firestore
       await setDoc(doc(db, "users", userId), {
         id: userId,
         role: "doctor",
@@ -58,14 +58,13 @@ export function DoctorRegisterForm() {
         createdAt: serverTimestamp(),
       });
 
-      // Also add to public doctors collection
       await setDoc(doc(db, "doctors", userId), {
         id: userId,
         name: data.name,
         specialty: data.specialty,
         hospitalId: data.hospitalId,
         rating: 5.0,
-        fee: 500, // Updated to 500 Rupee default
+        fee: 500, // Default fee in Rupees
         availability: ["Monday 9am-12pm"],
         locationLatitude: 0,
         locationLongitude: 0

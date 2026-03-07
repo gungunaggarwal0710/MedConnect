@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -60,7 +61,6 @@ export default function DoctorsPage() {
           </div>
         </div>
 
-        {/* Specialty Filter */}
         <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
           {specialties.map((spec, i) => (
             <button 
@@ -75,7 +75,6 @@ export default function DoctorsPage() {
           ))}
         </div>
 
-        {/* Results List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockDoctors.map((doc) => (
             <Card key={doc.id} className="border-none shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
