@@ -311,6 +311,10 @@ export default function DoctorsPage() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none rounded-3xl">
+                    <DialogHeader className="sr-only">
+                      <DialogTitle>{doc.name} - {doc.specialty}</DialogTitle>
+                      <DialogDescription>Full medical profile and qualifications for {doc.name}</DialogDescription>
+                    </DialogHeader>
                     <div className="bg-primary p-8 text-white relative">
                       <div className="flex gap-6 items-center">
                         <div className="w-24 h-24 rounded-3xl border-4 border-white/20 overflow-hidden shadow-2xl">
