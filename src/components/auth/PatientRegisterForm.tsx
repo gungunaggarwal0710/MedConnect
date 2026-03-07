@@ -29,7 +29,7 @@ export function PatientRegisterForm() {
       email: "",
       password: "",
       phone: "",
-      age: undefined as any, // Start with empty for uncontrolled warning fix
+      age: "" as any, // Initialized to empty string for controlled input stability
       emergencyContactName: "",
       emergencyContactPhone: "",
     },

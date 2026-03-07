@@ -38,6 +38,11 @@ const mockDoctors = [
 export default function DoctorsPage() {
   const [search, setSearch] = useState("");
 
+  const filteredDoctors = mockDoctors.filter(doc => 
+    doc.name.toLowerCase().includes(search.toLowerCase()) || 
+    doc.specialty.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
       <Navigation />
@@ -76,7 +81,7 @@ export default function DoctorsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockDoctors.map((doc) => (
+          {filteredDoctors.map((doc) => (
             <Card key={doc.id} className="border-none shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
               <CardContent className="p-0">
                 <div className="flex p-6 gap-4">
@@ -113,6 +118,11 @@ export default function DoctorsPage() {
               </CardFooter>
             </Card>
           ))}
+          {filteredDoctors.length === 0 && (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              No doctors found matching your search.
+            </div>
+          )}
         </div>
       </main>
     </div>
