@@ -31,7 +31,9 @@ import {
   Sparkles,
   CheckCircle2,
   Info,
-  Save
+  Save,
+  ChevronRight,
+  ClipboardList
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -72,6 +74,7 @@ export default function DashboardPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PrescriptionReaderOutput | null>(null);
   const [isSavingPrescription, setIsSavingPrescription] = useState(false);
+  const [viewingPrescription, setViewingPrescription] = useState<any | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -499,15 +502,22 @@ export default function DashboardPage() {
                     <div className="flex justify-center p-4"><Loader2 className="animate-spin h-4 w-4 text-primary" /></div>
                   ) : prescriptions && prescriptions.length > 0 ? (
                     prescriptions.map((presc) => (
-                      <div key={presc.id} className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <div 
+                        key={presc.id} 
+                        className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10 cursor-pointer hover:bg-primary/10 transition-colors group"
+                        onClick={() => setViewingPrescription(presc)}
+                      >
                         <FileText className="h-4 w-4 text-primary" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold truncate">Rx: {presc.doctorName || "Doctor"}</p>
+                          <p className="text-sm font-bold truncate group-hover:text-primary">Rx: {presc.doctorName || "Doctor"}</p>
                           <p className="text-[10px] text-muted-foreground">
                             {presc.createdAt?.toDate ? new Date(presc.createdAt.toDate()).toLocaleDateString() : 'Just now'}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="text-[8px]">{presc.medications?.length} items</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-[8px]">{presc.medications?.length} items</Badge>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
                       </div>
                     ))
                   ) : null}
@@ -556,6 +566,81 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
+
+        {/* Detailed Prescription Review Modal */}
+        <Dialog open={!!viewingPrescription} onOpenChange={(open) => !open && setViewingPrescription(null)}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-primary">
+                <ClipboardList className="h-5 w-5" /> Prescription Review
+              </DialogTitle>
+              <DialogDescription>
+                Detailed records for prescription added on {viewingPrescription?.createdAt?.toDate ? new Date(viewingPrescription.createdAt.toDate()).toLocaleDateString() : 'recent date'}.
+              </DialogDescription>
+            </DialogHeader>
+
+            {viewingPrescription && (
+              <div className="space-y-6 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted/30 rounded-2xl">
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-1">Prescribing Doctor</p>
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      <Stethoscope className="h-4 w-4 text-primary" /> {viewingPrescription.doctorName || "N/A"}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted/30 rounded-2xl">
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-1">Patient Name</p>
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      <User className="h-4 w-4 text-primary" /> {viewingPrescription.patientName || "N/A"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" /> Medications & Dosage
+                  </h3>
+                  <div className="grid gap-3">
+                    {viewingPrescription.medications?.map((med: any, idx: number) => (
+                      <div key={idx} className="p-4 bg-white border border-border rounded-2xl shadow-sm">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-bold text-primary">{med.name}</p>
+                          <Badge variant="secondary" className="bg-primary/5 text-primary text-[10px]">{med.dosage}</Badge>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/20 p-2 rounded-lg">
+                          <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                          <p>{med.instructions}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {viewingPrescription.diagnosis && (
+                  <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
+                    <p className="text-[10px] text-green-700 font-bold uppercase tracking-widest mb-1">Stated Diagnosis</p>
+                    <p className="text-sm font-bold text-green-900">{viewingPrescription.diagnosis}</p>
+                  </div>
+                )}
+
+                {viewingPrescription.additionalNotes && (
+                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p className="text-[10px] text-amber-700 font-bold uppercase tracking-widest mb-1">Additional Notes</p>
+                    <p className="text-xs text-amber-900 italic leading-relaxed">
+                      "{viewingPrescription.additionalNotes}"
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <Button variant="outline" className="w-full" onClick={() => setViewingPrescription(null)}>
+                    Close Review
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
