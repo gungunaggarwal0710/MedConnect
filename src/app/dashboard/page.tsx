@@ -23,7 +23,10 @@ import {
   FileText,
   Plus,
   Loader2,
-  Ruler
+  Ruler,
+  Calendar as CalendarIcon,
+  MapPin,
+  Stethoscope
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -38,6 +41,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 const healthRecordSchema = z.object({
   heartRate: z.coerce.number().min(30).max(250),
@@ -69,7 +73,16 @@ export default function DashboardPage() {
     );
   }, [db, user?.uid]);
 
-  const { data: records, isLoading } = useCollection(statsQuery);
+  const appointmentsQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, "users", user.uid, "appointments"),
+      orderBy("date", "asc")
+    );
+  }, [db, user?.uid]);
+
+  const { data: records, isLoading: isStatsLoading } = useCollection(statsQuery);
+  const { data: appointments, isLoading: isAppointmentsLoading } = useCollection(appointmentsQuery);
 
   const form = useForm<HealthRecordValues>({
     resolver: zodResolver(healthRecordSchema),
@@ -235,7 +248,7 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent className="h-[300px]">
-                {isLoading ? (
+                {isStatsLoading ? (
                   <div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
                 ) : chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -261,12 +274,44 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="border-none shadow-sm">
-                <CardHeader><CardTitle className="text-sm">Upcoming Appointments</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" /> Upcoming Appointments
+                  </CardTitle>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <div><p className="text-sm font-bold">No Scheduled Visits</p><p className="text-xs">Book a doctor today</p></div>
-                  </div>
+                  {isAppointmentsLoading ? (
+                    <div className="flex justify-center p-4"><Loader2 className="animate-spin h-4 w-4 text-primary" /></div>
+                  ) : appointments && appointments.length > 0 ? (
+                    appointments.map((apt) => (
+                      <div key={apt.id} className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg group">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary shadow-sm shrink-0">
+                          <Stethoscope className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate">{apt.doctorName}</p>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> {apt.time}</span>
+                            <span className="flex items-center gap-1"><CalendarIcon className="h-2.5 w-2.5" /> {new Date(apt.date).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-[9px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-2.5 w-2.5" /> {apt.hospitalName?.split(',')[0]}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-[8px] bg-white whitespace-nowrap">{apt.status}</Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <User className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-bold">No Scheduled Visits</p>
+                        <Button variant="link" className="text-xs p-0 h-auto font-bold" asChild>
+                          <Link href="/doctors">Book a doctor today</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -301,7 +346,7 @@ export default function DashboardPage() {
               <CardContent>
                 <p className="text-xs text-destructive-foreground">
                   {latest && latest.heartRate > 100 
-                    ? "Your heart rate is slightly elevated. Consider practicing deep breathing or consulting Dr. Smith." 
+                    ? "Your heart rate is slightly elevated. Consider practicing deep breathing or consulting Dr. Sandeep Budhiraja." 
                     : "No critical health alerts detected at this time based on your logs."}
                 </p>
               </CardContent>

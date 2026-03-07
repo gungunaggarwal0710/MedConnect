@@ -135,6 +135,26 @@
         "locationLongitude": { "type": "number" }
       },
       "required": ["id", "name"]
+    },
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents a doctor's appointment.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "doctorName": { "type": "string" },
+        "specialty": { "type": "string" },
+        "hospitalName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "time": { "type": "string" },
+        "paymentMethod": { "type": "string", "enum": ["prepaid", "spot"] },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["doctorId", "date", "time", "status"]
     }
   },
   "auth": {
@@ -174,6 +194,16 @@
             "$ref": "#/backend/entities/InsuranceClaim"
           },
           "description": "Insurance claims filed by the user."
+        }
+      },
+      {
+        "path": "/users/{userId}/appointments/{appointmentId}",
+        "definition": {
+          "entityName": "Appointment",
+          "schema": {
+            "$ref": "#/backend/entities/Appointment"
+          },
+          "description": "User's doctor appointments."
         }
       },
       {

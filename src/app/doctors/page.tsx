@@ -48,6 +48,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { mockDoctors, specialties, hospitals } from "@/lib/mock-data";
+import { useUser, useFirestore } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useRouter } from "next/navigation";
 
 const iconMap: Record<string, any> = {
   Stethoscope,
@@ -67,6 +71,10 @@ const timeSlots = [
 
 export default function DoctorsPage() {
   const { toast } = useToast();
+  const { user } = useUser();
+  const db = useFirestore();
+  const router = useRouter();
+  
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
   const [selectedHospital, setSelectedHospital] = useState("All");
@@ -92,11 +100,33 @@ export default function DoctorsPage() {
   }, [search, selectedSpecialty, selectedHospital, maxFee]);
 
   const handleConfirmBooking = () => {
+    if (!user) {
+      toast({ title: "Login Required", description: "Please login to book an appointment.", variant: "destructive" });
+      router.push("/login");
+      return;
+    }
+
     if (!selectedTime) {
       toast({ title: "Select Time", description: "Please choose a time slot for your appointment.", variant: "destructive" });
       return;
     }
     
+    if (db && user.uid) {
+      const appointmentsRef = collection(db, "users", user.uid, "appointments");
+      addDocumentNonBlocking(appointmentsRef, {
+        userId: user.uid,
+        doctorId: bookingDoctor.id,
+        doctorName: bookingDoctor.name,
+        specialty: bookingDoctor.specialty,
+        hospitalName: bookingDoctor.location,
+        date: bookingDate?.toISOString(),
+        time: selectedTime,
+        paymentMethod: paymentMethod,
+        status: "scheduled",
+        createdAt: serverTimestamp()
+      });
+    }
+
     setIsBookingSuccess(true);
     toast({ 
       title: "Booking Confirmed!", 
