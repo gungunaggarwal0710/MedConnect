@@ -53,7 +53,14 @@ const specialties = [
   { name: "Oncology", icon: Activity },
 ];
 
-const hospitals = ["All", "Max Super Speciality Hospital, Saket", "Batra Hospital, Tughlakabad", "Max Hospital, Shalimar Bagh", "Batra Hospital, Okhla"];
+const hospitals = [
+  "All", 
+  "Max Super Speciality Hospital, Saket", 
+  "Batra Hospital, Tughlakabad", 
+  "Indraprastha Apollo Hospital, Sarita Vihar",
+  "Max Hospital, Shalimar Bagh", 
+  "Batra Hospital, Okhla"
+];
 
 const mockDoctors = [
   { 
@@ -123,19 +130,45 @@ const mockDoctors = [
   },
   { 
     id: 6, 
-    name: "Dr. Vivek Kumar", 
-    specialty: "Neurology", 
-    degree: "MBBS, MD, DM",
-    experience: 25,
-    rating: 4.8, 
-    reviews: 290, 
-    location: "Max Super Speciality Hospital, Saket", 
-    fee: 1800, 
+    name: "Dr. Shakti Bhan Khanna", 
+    specialty: "Obstetrics & Gynaecology", 
+    degree: "MBBS, MD, FICOG",
+    experience: 45,
+    rating: 5.0, 
+    reviews: 1500, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 2000, 
     availability: "Today",
-    about: "Senior Director of Neurology with focus on Parkinson's disease and movement disorders."
+    about: "Senior Consultant at Apollo Hospitals with over 45 years of experience in Gynaecology and Obstetrics."
   },
   { 
     id: 7, 
+    name: "Dr. S.K.S. Marya", 
+    specialty: "Orthopaedics", 
+    degree: "MBBS, MS, DNB, MCh",
+    experience: 38,
+    rating: 4.9, 
+    reviews: 980, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 2500, 
+    availability: "Tomorrow",
+    about: "Chairman of Apollo Institute of Orthopaedics, pioneer in joint replacement surgery in India."
+  },
+  { 
+    id: 8, 
+    name: "Dr. Nikhil Modi", 
+    specialty: "Internal Medicine", 
+    degree: "MBBS, MD (Respiratory Medicine)",
+    experience: 18,
+    rating: 4.7, 
+    reviews: 210, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 1200, 
+    availability: "Today",
+    about: "Expert in pulmonology and critical care, specializing in respiratory tract infections and asthma."
+  },
+  { 
+    id: 9, 
     name: "Dr. Harit Chaturvedi", 
     specialty: "Oncology", 
     degree: "MBBS, MS, MCh (Surgical Oncology)",
@@ -148,30 +181,17 @@ const mockDoctors = [
     about: "Chairman of Max Institute of Cancer Care, internationally recognized for complex cancer surgeries."
   },
   { 
-    id: 8, 
-    name: "Dr. Upasna Bagchi", 
-    specialty: "Pediatrics", 
-    degree: "MBBS, MD (Pediatrics)",
-    experience: 15,
-    rating: 4.7, 
-    reviews: 150, 
-    location: "Batra Hospital, Tughlakabad", 
-    fee: 800, 
+    id: 10, 
+    name: "Dr. Sudheer Kumar Tyagi", 
+    specialty: "Neurology", 
+    degree: "MBBS, MS, MCh (Neurosurgery)",
+    experience: 25,
+    rating: 4.8, 
+    reviews: 340, 
+    location: "Indraprastha Apollo Hospital, Sarita Vihar", 
+    fee: 1800, 
     availability: "Next Week",
-    about: "Compassionate pediatrician with special interest in neonatology and child development."
-  },
-  { 
-    id: 9, 
-    name: "Dr. Rajiv Parakh", 
-    specialty: "Peripheral Vascular Surgery", 
-    degree: "MBBS, MS, FRCS (Edinburgh)",
-    experience: 35,
-    rating: 4.9, 
-    reviews: 520, 
-    location: "Max Super Speciality Hospital, Saket", 
-    fee: 2200, 
-    availability: "Tomorrow",
-    about: "Chairman of Peripheral Vascular and Endovascular Sciences, specialized in diabetic foot management."
+    about: "Senior Consultant Neurosurgeon with expertise in brain tumor surgery and spine surgery."
   }
 ];
 
@@ -200,7 +220,7 @@ export default function DoctorsPage() {
       <main className="max-w-7xl mx-auto px-4">
         <div className="mb-8 space-y-4">
           <h1 className="text-3xl font-bold">Find a Specialist</h1>
-          <p className="text-muted-foreground">Search and filter top doctors from Max Healthcare and Batra Hospital.</p>
+          <p className="text-muted-foreground">Search and filter top doctors from Apollo, Max, and Batra Hospitals.</p>
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
