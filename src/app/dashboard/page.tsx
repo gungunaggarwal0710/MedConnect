@@ -2,7 +2,7 @@
 "use client";
 
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { 
   XAxis, 
   YAxis, 
@@ -26,7 +26,11 @@ import {
   Ruler,
   Calendar as CalendarIcon,
   MapPin,
-  Stethoscope
+  Stethoscope,
+  Upload,
+  Sparkles,
+  CheckCircle2,
+  Info
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -35,13 +39,14 @@ import { collection, query, orderBy, limit, serverTimestamp } from "firebase/fir
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { readPrescription, type PrescriptionReaderOutput } from "@/ai/flows/prescription-reader-flow";
 
 const healthRecordSchema = z.object({
   heartRate: z.coerce.number().min(30).max(250),
@@ -59,6 +64,12 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Prescription Reader States
+  const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
+  const [prescriptionImage, setPrescriptionImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<PrescriptionReaderOutput | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -117,6 +128,32 @@ export default function DashboardPage() {
     form.reset();
   }
 
+  const handlePrescriptionUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPrescriptionImage(reader.result as string);
+        setAnalysisResult(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAnalyzePrescription = async () => {
+    if (!prescriptionImage) return;
+    setIsAnalyzing(true);
+    try {
+      const result = await readPrescription({ photoDataUri: prescriptionImage });
+      setAnalysisResult(result);
+      toast({ title: "Analysis Successful", description: "Prescription details extracted." });
+    } catch (error: any) {
+      toast({ title: "Analysis Failed", description: error.message || "Could not read prescription", variant: "destructive" });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   if (!mounted) return null;
 
   return (
@@ -133,6 +170,120 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center gap-3">
+            <Dialog open={isPrescriptionOpen} onOpenChange={setIsPrescriptionOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 shadow-sm">
+                  <FileText className="mr-2 h-4 w-4" /> Read Prescription
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" /> AI Prescription Reader
+                  </DialogTitle>
+                  <DialogDescription>
+                    Upload a photo of your prescription to extract medicines and instructions.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-6 pt-4">
+                  {!analysisResult ? (
+                    <div className="space-y-4">
+                      <div 
+                        className="border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => document.getElementById('presc-upload')?.click()}
+                      >
+                        {prescriptionImage ? (
+                          <img src={prescriptionImage} alt="Prescription" className="max-h-60 rounded-lg shadow-md" />
+                        ) : (
+                          <>
+                            <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                            <p className="text-sm font-medium">Click to upload prescription photo</p>
+                            <p className="text-xs text-muted-foreground mt-1">Handwritten or printed images supported</p>
+                          </>
+                        )}
+                        <input 
+                          type="file" 
+                          id="presc-upload" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={handlePrescriptionUpload} 
+                        />
+                      </div>
+                      
+                      {prescriptionImage && (
+                        <Button 
+                          onClick={handleAnalyzePrescription} 
+                          disabled={isAnalyzing}
+                          className="w-full bg-primary"
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Analyzing with AI...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Extract Data
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-muted/30 rounded-xl">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase">Patient</p>
+                          <p className="text-sm font-bold">{analysisResult.patientName || "N/A"}</p>
+                        </div>
+                        <div className="p-3 bg-muted/30 rounded-xl">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase">Doctor</p>
+                          <p className="text-sm font-bold">{analysisResult.doctorName || "N/A"}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-bold flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-primary" /> Prescribed Medications
+                        </h3>
+                        <div className="grid gap-3">
+                          {analysisResult.medications.map((med, idx) => (
+                            <div key={idx} className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="font-bold text-primary">{med.name}</p>
+                                <Badge variant="outline" className="bg-white">{med.dosage}</Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Info className="h-3 w-3" /> {med.instructions}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {analysisResult.diagnosis && (
+                        <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
+                          <p className="text-[10px] text-green-700 font-bold uppercase mb-1">Diagnosis Found</p>
+                          <p className="text-sm font-bold text-green-900">{analysisResult.diagnosis}</p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setAnalysisResult(null)}>
+                          Upload Another
+                        </Button>
+                        <Button className="flex-1 bg-primary" onClick={() => setIsPrescriptionOpen(false)}>
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary hover:bg-primary/90 shadow-lg">
