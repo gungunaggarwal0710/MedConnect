@@ -42,7 +42,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { useEffect, useState } from "react";
-import { collection, query, orderBy, limit, serverTimestamp, doc, where, collectionGroup } from "firebase/firestore";
+import { collection, query, orderBy, limit, serverTimestamp, doc, where } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,12 +105,11 @@ function DoctorDashboard({ profile }: { profile: any }) {
   const { user } = useUser();
   const db = useFirestore();
   
-  // Query all appointments across all users where doctorId matches
+  // Query all appointments in the top-level collection where doctorId matches
   const doctorAppointmentsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    // Note: This requires a collection group index for 'appointments'
     return query(
-      collectionGroup(db, "appointments"),
+      collection(db, "appointments"),
       where("doctorId", "==", user.uid),
       orderBy("date", "asc")
     );
@@ -281,8 +280,10 @@ function PatientDashboard({ profile }: { profile: any }) {
 
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
+    // Query top-level appointments where userId matches
     return query(
-      collection(db, "users", user.uid, "appointments"),
+      collection(db, "appointments"),
+      where("userId", "==", user.uid),
       orderBy("date", "asc")
     );
   }, [db, user?.uid]);

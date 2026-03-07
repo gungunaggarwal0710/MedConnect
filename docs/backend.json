@@ -225,13 +225,13 @@
         }
       },
       {
-        "path": "/users/{userId}/appointments/{appointmentId}",
+        "path": "/appointments/{appointmentId}",
         "definition": {
           "entityName": "Appointment",
           "schema": {
             "$ref": "#/backend/entities/Appointment"
           },
-          "description": "User's doctor appointments."
+          "description": "Doctor appointments."
         }
       },
       {

@@ -112,7 +112,8 @@ export default function DoctorsPage() {
     }
     
     if (db && user.uid) {
-      const appointmentsRef = collection(db, "users", user.uid, "appointments");
+      // Save to top-level appointments collection
+      const appointmentsRef = collection(db, "appointments");
       addDocumentNonBlocking(appointmentsRef, {
         userId: user.uid,
         doctorId: bookingDoctor.id,
