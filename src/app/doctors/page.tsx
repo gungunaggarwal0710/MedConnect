@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -112,7 +111,6 @@ export default function DoctorsPage() {
     }
     
     if (db && user.uid) {
-      // Save to top-level appointments collection
       const appointmentsRef = collection(db, "appointments");
       addDocumentNonBlocking(appointmentsRef, {
         userId: user.uid,
@@ -355,7 +353,6 @@ export default function DoctorsPage() {
                         </div>
                         
                         <div className="p-6 space-y-6">
-                          {/* Date Selection */}
                           <div className="space-y-3">
                             <Label className="text-sm font-bold flex items-center gap-2">
                               <CalendarIcon className="h-4 w-4 text-primary" /> Select Consultation Date
@@ -371,7 +368,6 @@ export default function DoctorsPage() {
                             </div>
                           </div>
 
-                          {/* Time Slot Selection */}
                           <div className="space-y-3">
                             <Label className="text-sm font-bold flex items-center gap-2">
                               <Clock className="h-4 w-4 text-primary" /> Available Time Slots
@@ -393,7 +389,6 @@ export default function DoctorsPage() {
                             </div>
                           </div>
 
-                          {/* Payment Method */}
                           <div className="space-y-3">
                             <Label className="text-sm font-bold flex items-center gap-2">
                               <CreditCard className="h-4 w-4 text-primary" /> Payment Method

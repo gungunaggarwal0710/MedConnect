@@ -59,3 +59,4 @@ export async function sambanovaChat(
   } catch (error: any) {
     throw new Error(`AI Error: ${error.message}`);
   }
+}
