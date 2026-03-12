@@ -7,8 +7,13 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
-    // Explicitly handle appointments collection for clarity
+    // Explicitly handle appointments collection
     match /appointments/{appointmentId} {
+      allow read, write: if true;
+    }
+
+    // Explicitly handle blood_donors collection
+    match /blood_donors/{donorId} {
       allow read, write: if true;
     }
   }

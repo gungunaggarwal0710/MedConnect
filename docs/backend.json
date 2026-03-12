@@ -69,6 +69,24 @@
         "phone"
       ]
     },
+    "BloodDonor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BloodDonor",
+      "type": "object",
+      "description": "Represents a volunteer blood donor.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "bloodType": { "type": "string", "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "lastDonated": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "bloodType", "phone", "isAvailable"]
+    },
     "InsurancePolicy": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "InsurancePolicy",
@@ -202,6 +220,16 @@
             "$ref": "#/backend/entities/UserProfile"
           },
           "description": "Private user profiles."
+        }
+      },
+      {
+        "path": "/blood_donors/{donorId}",
+        "definition": {
+          "entityName": "BloodDonor",
+          "schema": {
+            "$ref": "#/backend/entities/BloodDonor"
+          },
+          "description": "Public registry of blood donors."
         }
       },
       {
