@@ -13,6 +13,7 @@ import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export function PatientLoginForm() {
   const { toast } = useToast();
@@ -67,7 +68,15 @@ export function PatientLoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <div className="flex items-center justify-between">
+                <FormLabel>Password</FormLabel>
+                <Link 
+                  href="/forgot-password" 
+                  className="text-xs font-bold text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <FormControl>
                 <Input placeholder="********" {...field} type="password" disabled={loading} />
               </FormControl>

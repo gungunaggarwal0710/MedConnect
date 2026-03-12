@@ -11,6 +11,10 @@ export const doctorLoginSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
 export const patientRegisterSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
@@ -33,5 +37,6 @@ export const doctorRegisterSchema = z.object({
 
 export type PatientLoginValues = z.infer<typeof patientLoginSchema>;
 export type DoctorLoginValues = z.infer<typeof doctorLoginSchema>;
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type PatientRegisterValues = z.infer<typeof patientRegisterSchema>;
 export type DoctorRegisterValues = z.infer<typeof doctorRegisterSchema>;
