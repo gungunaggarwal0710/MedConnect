@@ -17,9 +17,10 @@ import {
   Search,
   PlusCircle,
   CheckCircle2,
-  Users
+  Users,
+  Award
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { useDoc } from "@/firebase/firestore/use-doc";
@@ -38,6 +39,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "@/components/ui/badge";
+import { mockBloodDonors } from "@/lib/mock-data";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -65,7 +67,7 @@ export default function EmergencyPage() {
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  // Query for donors
+  // Query for donors in Firestore
   const donorsQuery = useMemoFirebase(() => {
     if (!db) return null;
     if (selectedBloodType === "All") {
@@ -78,7 +80,14 @@ export default function EmergencyPage() {
     );
   }, [db, selectedBloodType]);
 
-  const { data: donors, isLoading: isDonorsLoading } = useCollection(donorsQuery);
+  const { data: firestoreDonors, isLoading: isDonorsLoading } = useCollection(donorsQuery);
+
+  // Combine Mock Donors and Firestore Donors for a comprehensive list
+  const allDonors = useMemo(() => {
+    const mock = mockBloodDonors.filter(d => selectedBloodType === "All" || d.bloodType === selectedBloodType);
+    const dbDonors = firestoreDonors || [];
+    return [...dbDonors, ...mock];
+  }, [firestoreDonors, selectedBloodType]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -102,7 +111,10 @@ export default function EmergencyPage() {
   };
 
   const handleRegisterDonor = () => {
-    if (!db || !user?.uid) return;
+    if (!db || !user?.uid) {
+      toast({ title: "Login Required", description: "Please log in to register as a donor.", variant: "destructive" });
+      return;
+    }
     const colRef = collection(db, "blood_donors");
     addDocumentNonBlocking(colRef, {
       userId: user.uid,
@@ -140,7 +152,7 @@ export default function EmergencyPage() {
               <span className="text-xs mt-2 uppercase tracking-widest font-bold">Tap to trigger</span>
             </button>
           ) : (
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 w-full">
               <div className="text-green-600 flex items-center justify-center gap-2 text-xl font-bold">
                 <Send className="h-6 w-6" /> Alert Active
               </div>
@@ -155,7 +167,7 @@ export default function EmergencyPage() {
         <section className="mb-12 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Droplets className="h-5 w-5 text-red-600" /> Emergency Blood Support
+              <Droplets className="h-5 w-5 text-red-600" /> Delhi Blood Donor Network
             </h2>
             <Dialog open={isRegistering} onOpenChange={setIsRegistering}>
               <DialogTrigger asChild>
@@ -166,7 +178,7 @@ export default function EmergencyPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Blood Donor Registration</DialogTitle>
-                  <DialogDescription>Your details will be visible to people in medical emergencies.</DialogDescription>
+                  <DialogDescription>Your details will be visible to people in medical emergencies in Delhi NCR.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <div className="space-y-2">
@@ -214,10 +226,13 @@ export default function EmergencyPage() {
 
           <Card className="border-none shadow-md overflow-hidden bg-white">
             <CardHeader className="bg-red-50/50 pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold">Find Nearby Donors</CardTitle>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-bold">Verified Donors in Delhi</CardTitle>
+                  <CardDescription className="text-[10px]">Real-time registry from Community & verified lists</CardDescription>
+                </div>
                 <Select value={selectedBloodType} onValueChange={setSelectedBloodType}>
-                  <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectTrigger className="w-32 h-8 text-xs bg-white">
                     <SelectValue placeholder="All Groups" />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,28 +242,31 @@ export default function EmergencyPage() {
                 </Select>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 max-h-[400px] overflow-y-auto scrollbar-hide">
               {isDonorsLoading ? (
                 <div className="flex justify-center p-8"><Loader2 className="animate-spin text-red-600" /></div>
-              ) : donors && donors.length > 0 ? (
+              ) : allDonors.length > 0 ? (
                 <div className="space-y-3">
-                  {donors.map((donor) => (
-                    <div key={donor.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-transparent hover:border-red-200 transition-all">
+                  {allDonors.map((donor) => (
+                    <div key={donor.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-transparent hover:border-red-200 transition-all group">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">
+                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs shrink-0">
                           {donor.bloodType}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">{donor.name}</p>
-                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold truncate flex items-center gap-1">
+                            {donor.name}
+                            {donor.id.startsWith('bd') && <Award className="h-3 w-3 text-amber-500 fill-amber-500" title="Verified Donor" />}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
                             <MapPin className="h-2.5 w-2.5" /> {donor.location}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] bg-green-50 text-green-700 border-green-200">Available</Badge>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" asChild>
-                          <a href={`tel:${donor.phone}`}><Phone className="h-4 w-4" /></a>
+                        <Badge variant="outline" className="text-[9px] bg-green-50 text-green-700 border-green-200 hidden sm:flex">Verified</Badge>
+                        <Button size="icon" variant="ghost" className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 rounded-full" asChild>
+                          <a href={`tel:${donor.phone}`}><Phone className="h-5 w-5" /></a>
                         </Button>
                       </div>
                     </div>
@@ -266,7 +284,7 @@ export default function EmergencyPage() {
 
         <section className="space-y-6 mb-12">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Hospital className="h-5 w-5 text-primary" /> Nearest Assistance
+            <Hospital className="h-5 w-5 text-primary" /> Nearest Delhi Healthcare
           </h2>
           
           <div className="grid gap-4">
@@ -300,9 +318,11 @@ export default function EmergencyPage() {
         </section>
 
         <section className="mt-8">
-          <Card className="bg-secondary/50 border-none">
-            <CardHeader>
-              <CardTitle className="text-sm">Emergency Contacts Alerted</CardTitle>
+          <Card className="bg-secondary/50 border-none shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Emergency Contacts Alerted
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {isProfileLoading ? (
@@ -310,10 +330,10 @@ export default function EmergencyPage() {
                   <Loader2 className="animate-spin h-6 w-6 text-primary" />
                 </div>
               ) : profile?.emergencyContacts?.length > 0 ? (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {profile.emergencyContacts.map((contact: any, i: number) => (
                     <div key={i} className="flex flex-col items-center gap-1 min-w-[100px]">
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/20 text-sm font-bold text-primary">
+                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/20 text-sm font-bold text-primary shadow-sm">
                         {contact.name[0]}
                       </div>
                       <span className="text-[10px] text-center font-bold truncate w-full px-1">{contact.name}</span>
@@ -322,9 +342,14 @@ export default function EmergencyPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground italic text-center py-4">
-                  No emergency contacts found. Add them in your <a href="/profile" className="text-primary font-bold underline">Profile</a>.
-                </p>
+                <div className="text-center py-6">
+                  <p className="text-xs text-muted-foreground italic mb-3">
+                    No emergency contacts found.
+                  </p>
+                  <Button variant="outline" size="sm" className="h-8 border-primary text-primary" asChild>
+                    <a href="/profile">Add Contacts in Profile</a>
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

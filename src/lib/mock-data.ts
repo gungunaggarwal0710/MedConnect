@@ -20,6 +20,19 @@ export const hospitals = [
   "Max Hospital, Patparganj"
 ];
 
+export const mockBloodDonors = [
+  { id: "bd1", name: "Amit Sharma", bloodType: "O+", phone: "+919810012345", location: "Saket, New Delhi", isAvailable: true },
+  { id: "bd2", name: "Priya Verma", bloodType: "A-", phone: "+919910054321", location: "Dwarka Sector 10", isAvailable: true },
+  { id: "bd3", name: "Rajesh Gupta", bloodType: "B+", phone: "+919811122233", location: "Rohini, North Delhi", isAvailable: true },
+  { id: "bd4", name: "Sneha Kapoor", bloodType: "AB+", phone: "+919818877665", location: "Janakpuri, West Delhi", isAvailable: true },
+  { id: "bd5", name: "Vikram Singh", bloodType: "O-", phone: "+919876543210", location: "Vasant Kunj, South Delhi", isAvailable: true },
+  { id: "bd6", name: "Anjali Mehra", bloodType: "B-", phone: "+919955443322", location: "Pitampura, New Delhi", isAvailable: true },
+  { id: "bd7", name: "Rohan Das", bloodType: "A+", phone: "+919822334455", location: "Karol Bagh, Central Delhi", isAvailable: true },
+  { id: "bd8", name: "Sunita Yadav", bloodType: "O+", phone: "+919911223344", location: "Laxmi Nagar, East Delhi", isAvailable: true },
+  { id: "bd9", name: "Manish Malhotra", bloodType: "AB-", phone: "+919810101010", location: "Hauz Khas, South Delhi", isAvailable: true },
+  { id: "bd10", name: "Kavita Reddy", bloodType: "B+", phone: "+919820202020", location: "Malviya Nagar, New Delhi", isAvailable: true }
+];
+
 export const mockDoctors = [
   { 
     id: 1, 
