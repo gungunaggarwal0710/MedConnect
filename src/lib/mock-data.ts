@@ -1,4 +1,3 @@
-
 export const specialties = [
   { name: "All", icon: "Stethoscope" },
   { name: "Internal Medicine", icon: "Stethoscope" },
@@ -31,6 +30,13 @@ export const mockBloodDonors = [
   { id: "bd8", name: "Sunita Yadav", bloodType: "O+", phone: "+919911223344", location: "Laxmi Nagar, East Delhi", isAvailable: true },
   { id: "bd9", name: "Manish Malhotra", bloodType: "AB-", phone: "+919810101010", location: "Hauz Khas, South Delhi", isAvailable: true },
   { id: "bd10", name: "Kavita Reddy", bloodType: "B+", phone: "+919820202020", location: "Malviya Nagar, New Delhi", isAvailable: true }
+];
+
+export const mockAmbulances = [
+  { id: "amb1", provider: "Max Healthcare ACLS", location: "Saket", eta: "5 mins", type: "Advanced (Life Support)", phone: "+911126515050" },
+  { id: "amb2", provider: "Apollo Critical Care", location: "Sarita Vihar", eta: "8 mins", type: "Advanced (ACLS)", phone: "+911171791090" },
+  { id: "amb3", provider: "CAT Government Service", location: "Central Delhi", eta: "12 mins", type: "Basic (BLS)", phone: "102" },
+  { id: "amb4", provider: "Private Quick Response", location: "South Delhi", eta: "4 mins", type: "Quick Response (QRT)", phone: "+919810011223" },
 ];
 
 export const mockDoctors = [

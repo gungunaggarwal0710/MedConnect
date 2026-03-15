@@ -18,7 +18,13 @@ import {
   PlusCircle,
   CheckCircle2,
   Users,
-  Award
+  Award,
+  Truck,
+  Flame,
+  UserCheck,
+  Smartphone,
+  Info,
+  ChevronRight
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -39,9 +45,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "@/components/ui/badge";
-import { mockBloodDonors } from "@/lib/mock-data";
+import { mockBloodDonors, mockAmbulances } from "@/lib/mock-data";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+const emergencyContactsList = [
+  { label: "Emergency", number: "112", icon: ShieldAlert, color: "bg-red-600" },
+  { label: "Police", number: "100", icon: ShieldAlert, color: "bg-blue-600" },
+  { label: "Fire", number: "101", icon: Flame, color: "bg-orange-600" },
+  { label: "Ambulance", number: "102", icon: Truck, color: "bg-green-600" },
+];
 
 export default function EmergencyPage() {
   const { toast } = useToast();
@@ -49,6 +62,7 @@ export default function EmergencyPage() {
   const db = useFirestore();
   const [sosSent, setSosSent] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [bookingAmbulance, setBookingAmbulance] = useState<any>(null);
   
   // Blood Donor States
   const [selectedBloodType, setSelectedBloodType] = useState<string>("All");
@@ -110,6 +124,14 @@ export default function EmergencyPage() {
     });
   };
 
+  const handleBookAmbulance = (amb: any) => {
+    setBookingAmbulance(amb);
+    toast({
+      title: "Ambulance Requested",
+      description: `${amb.provider} is dispatched and arriving in ${amb.eta}.`,
+    });
+  };
+
   const handleRegisterDonor = () => {
     if (!db || !user?.uid) {
       toast({ title: "Login Required", description: "Please log in to register as a donor.", variant: "destructive" });
@@ -133,181 +155,295 @@ export default function EmergencyPage() {
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
       <Navigation />
       
-      <main className="max-w-3xl mx-auto px-4">
-        <div className="text-center space-y-4 mb-8">
+      <main className="max-w-4xl mx-auto px-4">
+        {/* Main SOS Section */}
+        <section className="text-center space-y-6 mb-12">
           <div className="mx-auto w-24 h-24 bg-destructive/10 rounded-full flex items-center justify-center animate-pulse">
             <ShieldAlert className="h-12 w-12 text-destructive" />
           </div>
-          <h1 className="text-3xl font-bold text-destructive">Emergency SOS</h1>
-          <p className="text-muted-foreground">Tap the button below for immediate assistance.</p>
-        </div>
-
-        <div className="flex justify-center mb-12">
-          {!sosSent ? (
-            <button 
-              onClick={handleSOS}
-              className="w-48 h-48 rounded-full bg-destructive shadow-[0_0_50px_rgba(255,107,107,0.5)] flex flex-col items-center justify-center text-white border-8 border-white animate-bounce active:scale-95 transition-transform"
-            >
-              <span className="text-4xl font-black">SOS</span>
-              <span className="text-xs mt-2 uppercase tracking-widest font-bold">Tap to trigger</span>
-            </button>
-          ) : (
-            <div className="text-center space-y-4 w-full">
-              <div className="text-green-600 flex items-center justify-center gap-2 text-xl font-bold">
-                <Send className="h-6 w-6" /> Alert Active
-              </div>
-              <p className="text-sm bg-green-50 text-green-700 p-4 rounded-lg">
-                Your location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} has been shared with nearby hospitals & Emergency Contacts.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Emergency Blood Section */}
-        <section className="mb-12 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Droplets className="h-5 w-5 text-red-600" /> Delhi Blood Donor Network
-            </h2>
-            <Dialog open={isRegistering} onOpenChange={setIsRegistering}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="border-red-600 text-red-600 hover:bg-red-50">
-                  <PlusCircle className="h-4 w-4 mr-2" /> Register as Donor
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Blood Donor Registration</DialogTitle>
-                  <DialogDescription>Your details will be visible to people in medical emergencies in Delhi NCR.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input 
-                      placeholder="Enter your name" 
-                      value={donorData.name} 
-                      onChange={e => setDonorData({...donorData, name: e.target.value})} 
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Blood Type</Label>
-                      <Select onValueChange={v => setDonorData({...donorData, bloodType: v})}>
-                        <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
-                        <SelectContent>
-                          {bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Contact Number</Label>
-                      <Input 
-                        placeholder="10 digit number" 
-                        value={donorData.phone} 
-                        onChange={e => setDonorData({...donorData, phone: e.target.value})} 
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>General Location</Label>
-                    <Input 
-                      placeholder="e.g. Saket, Delhi" 
-                      value={donorData.location} 
-                      onChange={e => setDonorData({...donorData, location: e.target.value})} 
-                    />
-                  </div>
-                  <Button className="w-full bg-red-600 hover:bg-red-700" onClick={handleRegisterDonor}>
-                    Confirm Volunteer Registration
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+          <div>
+            <h1 className="text-4xl font-black text-destructive tracking-tighter uppercase">Emergency SOS</h1>
+            <p className="text-muted-foreground font-medium">Immediate assistance at your fingertips</p>
           </div>
 
-          <Card className="border-none shadow-md overflow-hidden bg-white">
-            <CardHeader className="bg-red-50/50 pb-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-sm font-bold">Verified Donors in Delhi</CardTitle>
-                  <CardDescription className="text-[10px]">Real-time registry from Community & verified lists</CardDescription>
-                </div>
-                <Select value={selectedBloodType} onValueChange={setSelectedBloodType}>
-                  <SelectTrigger className="w-32 h-8 text-xs bg-white">
-                    <SelectValue placeholder="All Groups" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All Groups</SelectItem>
-                    {bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+          <div className="flex justify-center py-6">
+            {!sosSent ? (
+              <button 
+                onClick={handleSOS}
+                className="w-56 h-56 rounded-full bg-destructive shadow-[0_0_60px_rgba(255,107,107,0.6)] flex flex-col items-center justify-center text-white border-[10px] border-white active:scale-95 transition-all animate-pulse-red"
+              >
+                <span className="text-5xl font-black italic">SOS</span>
+                <span className="text-[10px] mt-2 uppercase tracking-[0.2em] font-bold opacity-80">Tap to Trigger</span>
+              </button>
+            ) : (
+              <Card className="w-full max-w-md border-green-200 bg-green-50/50 shadow-lg">
+                <CardContent className="pt-6 text-center space-y-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mx-auto animate-bounce">
+                    <Send className="h-8 w-8" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-bold text-green-700">Alert System Active</h2>
+                    <p className="text-sm text-green-600/80 leading-relaxed px-4">
+                      Your real-time location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} shared with State Emergency Room and {profile?.emergencyContacts?.length || 0} family members.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </section>
+
+        {/* Quick Emergency Numbers */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {emergencyContactsList.map((item, i) => (
+            <a 
+              key={i} 
+              href={`tel:${item.number}`}
+              className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-transparent hover:border-primary/20 transition-all group"
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white ${item.color} shadow-md group-hover:scale-110 transition-transform`}>
+                <item.icon className="h-6 w-6" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-4 max-h-[400px] overflow-y-auto scrollbar-hide">
-              {isDonorsLoading ? (
-                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-red-600" /></div>
-              ) : allDonors.length > 0 ? (
-                <div className="space-y-3">
-                  {allDonors.map((donor) => (
-                    <div key={donor.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-transparent hover:border-red-200 transition-all group">
+              <div className="text-center">
+                <p className="text-xs font-bold text-muted-foreground uppercase">{item.label}</p>
+                <p className="text-xl font-black text-foreground">{item.number}</p>
+              </div>
+            </a>
+          ))}
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Nearby Ambulances */}
+          <section className="space-y-6">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Truck className="h-5 w-5 text-green-600" /> Book Nearby Ambulance
+            </h2>
+            <Card className="border-none shadow-md overflow-hidden bg-white">
+              <CardHeader className="bg-green-50/50 pb-4">
+                <CardTitle className="text-sm font-bold">Fastest Response Units</CardTitle>
+                <CardDescription className="text-[10px]">Showing ACLS & BLS units within 10km radius</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-3">
+                {mockAmbulances.map((amb) => (
+                  <div key={amb.id} className="p-4 bg-muted/30 rounded-2xl border border-transparent hover:border-green-200 transition-all group">
+                    <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                          <Truck className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold">{amb.provider}</p>
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase">{amb.type}</p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 text-[10px] font-bold">
+                        {amb.eta}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 h-9 rounded-xl border-green-200 text-green-700"
+                        asChild
+                      >
+                        <a href={`tel:${amb.phone}`}>Call Unit</a>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="flex-1 h-9 rounded-xl bg-green-600 hover:bg-green-700"
+                        onClick={() => handleBookAmbulance(amb)}
+                      >
+                        Book Now
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Blood Donor Network */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Droplets className="h-5 w-5 text-red-600" /> Blood Donor Network
+              </h2>
+              <Dialog open={isRegistering} onOpenChange={setIsRegistering}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 border-red-600 text-red-600 text-[10px] rounded-lg">
+                    <PlusCircle className="h-3 w-3 mr-1" /> Register
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Volunteer Donor Registration</DialogTitle>
+                    <DialogDescription>Your details help save lives during local medical emergencies.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label>Full Name</Label>
+                      <Input 
+                        placeholder="Your name" 
+                        value={donorData.name} 
+                        onChange={e => setDonorData({...donorData, name: e.target.value})} 
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Blood Type</Label>
+                        <Select onValueChange={v => setDonorData({...donorData, bloodType: v})}>
+                          <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                          <SelectContent>
+                            {bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Contact</Label>
+                        <Input 
+                          placeholder="10 digit phone" 
+                          value={donorData.phone} 
+                          onChange={e => setDonorData({...donorData, phone: e.target.value})} 
+                        />
+                      </div>
+                    </div>
+                    <Button className="w-full bg-red-600" onClick={handleRegisterDonor}>Register Now</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <Card className="border-none shadow-md overflow-hidden bg-white">
+              <CardHeader className="bg-red-50/50 pb-4">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-sm font-bold">Delhi NCR Donors</CardTitle>
+                  <Select value={selectedBloodType} onValueChange={setSelectedBloodType}>
+                    <SelectTrigger className="w-24 h-7 text-[10px] bg-white">
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All Groups</SelectItem>
+                      {bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 max-h-[300px] overflow-y-auto scrollbar-hide space-y-3">
+                {isDonorsLoading ? (
+                  <div className="flex justify-center p-8"><Loader2 className="animate-spin text-red-600" /></div>
+                ) : allDonors.length > 0 ? (
+                  allDonors.map((donor) => (
+                    <div key={donor.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-transparent hover:border-red-200 transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">
                           {donor.bloodType}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold truncate flex items-center gap-1">
+                          <p className="text-xs font-bold truncate flex items-center gap-1">
                             {donor.name}
-                            {donor.id.startsWith('bd') && <Award className="h-3 w-3 text-amber-500 fill-amber-500" title="Verified Donor" />}
+                            {donor.id.startsWith('bd') && <Award className="h-3 w-3 text-amber-500 fill-amber-500" />}
                           </p>
-                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
-                            <MapPin className="h-2.5 w-2.5" /> {donor.location}
-                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{donor.location}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] bg-green-50 text-green-700 border-green-200 hidden sm:flex">Verified</Badge>
-                        <Button size="icon" variant="ghost" className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 rounded-full" asChild>
-                          <a href={`tel:${donor.phone}`}><Phone className="h-5 w-5" /></a>
-                        </Button>
-                      </div>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 bg-red-50 rounded-full shrink-0" asChild>
+                        <a href={`tel:${donor.phone}`}><Phone className="h-4 w-4" /></a>
+                      </Button>
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <p className="text-center py-10 text-xs text-muted-foreground italic">No donors found.</p>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+
+        {/* How to Use / 112 India Guide */}
+        <section className="mb-12">
+          <Card className="border-none shadow-lg bg-primary/5 overflow-hidden">
+            <CardHeader className="bg-primary/10 border-b border-primary/10">
+              <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                <Info className="h-5 w-5" /> How it Works: Emergency Protocol
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">1</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm">Download & Setup</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">Download '112 India' app or use this SOS portal. Complete your profile with age and emergency contacts.</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-10">
-                  <Droplets className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-20" />
-                  <p className="text-sm text-muted-foreground">No donors found for this blood group.</p>
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">2</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm">Register Emergency Info</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">Ensure your GPS is enabled. Your real-time location is shared instantly with State Control Rooms upon activation.</p>
+                  </div>
                 </div>
-              )}
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">3</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm">Activate Alert</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">In an emergency, press the SOS button. Alerts are sent to emergency services and nearby registered volunteers.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/50 p-6 rounded-[2rem] border border-primary/10 space-y-4">
+                <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                   <Smartphone className="h-4 w-4 text-primary" /> App Key Features
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                    <UserCheck className="h-3 w-3 text-primary mt-0.5" />
+                    <strong>Volunteer Support:</strong> Alerts registered volunteers in the vicinity to provide immediate help.
+                  </li>
+                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                    <MapPin className="h-3 w-3 text-primary mt-0.5" />
+                    <strong>Location Tracking:</strong> Sends real-time location data to State Emergency Control Rooms.
+                  </li>
+                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                    <Users className="h-3 w-3 text-primary mt-0.5" />
+                    <strong>Multi-Emergency Access:</strong> Direct link to Police, Fire Brigade, and Medical response.
+                  </li>
+                </ul>
+                <div className="pt-2">
+                  <Button variant="secondary" className="w-full text-[10px] h-8 font-bold" asChild>
+                    <a href="https://112.gov.in/" target="_blank">Learn More about 112 India</a>
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </section>
 
-        <section className="space-y-6 mb-12">
+        {/* Nearest Hospitals */}
+        <section className="space-y-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Hospital className="h-5 w-5 text-primary" /> Nearest Delhi Healthcare
+            <Hospital className="h-5 w-5 text-primary" /> Hospital Support
           </h2>
-          
           <div className="grid gap-4">
             {[
-              { name: "Max Super Speciality", dist: "0.8 km", beds: 24, type: "Hospital", phone: "+911126515050" },
-              { name: "Indraprastha Apollo", dist: "3.2 km", beds: 40, type: "Hospital", phone: "+911171791090" },
+              { name: "Max Super Speciality", dist: "0.8 km", beds: 24, phone: "+911126515050" },
+              { name: "Indraprastha Apollo", dist: "3.2 km", beds: 40, phone: "+911171791090" },
             ].map((hosp, i) => (
-              <Card key={i} className="hover:border-primary transition-colors border-none shadow-sm">
+              <Card key={i} className="hover:border-primary transition-all border-none shadow-sm group">
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="space-y-1">
-                    <h3 className="font-bold">{hosp.name}</h3>
+                    <h3 className="font-bold group-hover:text-primary transition-colors">{hosp.name}</h3>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <MapPin className="h-3 w-3" /> {hosp.dist}
                       <Activity className="h-3 w-3 ml-2 text-primary" /> {hosp.beds} ICU beds free
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="icon" variant="outline" className="rounded-full" asChild>
-                      <a href={`tel:${hosp.phone}`}>
-                        <Phone className="h-4 w-4" />
-                      </a>
+                    <Button size="icon" variant="ghost" className="rounded-full bg-secondary/50 text-primary" asChild>
+                      <a href={`tel:${hosp.phone}`}><Phone className="h-4 w-4" /></a>
                     </Button>
-                    <Button size="sm" className="bg-primary text-white" asChild>
+                    <Button size="sm" className="bg-primary rounded-xl" asChild>
                       <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hosp.name)}`} target="_blank">Navigate</a>
                     </Button>
                   </div>
@@ -315,44 +451,6 @@ export default function EmergencyPage() {
               </Card>
             ))}
           </div>
-        </section>
-
-        <section className="mt-8">
-          <Card className="bg-secondary/50 border-none shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" /> Emergency Contacts Alerted
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isProfileLoading ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="animate-spin h-6 w-6 text-primary" />
-                </div>
-              ) : profile?.emergencyContacts?.length > 0 ? (
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {profile.emergencyContacts.map((contact: any, i: number) => (
-                    <div key={i} className="flex flex-col items-center gap-1 min-w-[100px]">
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/20 text-sm font-bold text-primary shadow-sm">
-                        {contact.name[0]}
-                      </div>
-                      <span className="text-[10px] text-center font-bold truncate w-full px-1">{contact.name}</span>
-                      <span className="text-[9px] text-center text-muted-foreground">{contact.relation || "Contact"}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-xs text-muted-foreground italic mb-3">
-                    No emergency contacts found.
-                  </p>
-                  <Button variant="outline" size="sm" className="h-8 border-primary text-primary" asChild>
-                    <a href="/profile">Add Contacts in Profile</a>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </section>
       </main>
     </div>
