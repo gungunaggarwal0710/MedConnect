@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -358,67 +357,6 @@ export default function EmergencyPage() {
             </Card>
           </section>
         </div>
-
-        {/* How to Use / 112 India Guide */}
-        <section className="mb-12">
-          <Card className="border-none shadow-lg bg-primary/5 overflow-hidden">
-            <CardHeader className="bg-primary/10 border-b border-primary/10">
-              <CardTitle className="text-lg flex items-center gap-2 text-primary">
-                <Info className="h-5 w-5" /> How it Works: Emergency Protocol
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">1</div>
-                  <div className="space-y-1">
-                    <p className="font-bold text-sm">Download & Setup</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic">Download '112 India' app or use this SOS portal. Complete your profile with age and emergency contacts.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">2</div>
-                  <div className="space-y-1">
-                    <p className="font-bold text-sm">Register Emergency Info</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic">Ensure your GPS is enabled. Your real-time location is shared instantly with State Control Rooms upon activation.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-lg shadow-primary/20">3</div>
-                  <div className="space-y-1">
-                    <p className="font-bold text-sm">Activate Alert</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic">In an emergency, press the SOS button. Alerts are sent to emergency services and nearby registered volunteers.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/50 p-6 rounded-[2rem] border border-primary/10 space-y-4">
-                <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
-                   <Smartphone className="h-4 w-4 text-primary" /> App Key Features
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                    <UserCheck className="h-3 w-3 text-primary mt-0.5" />
-                    <strong>Volunteer Support:</strong> Alerts registered volunteers in the vicinity to provide immediate help.
-                  </li>
-                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                    <MapPin className="h-3 w-3 text-primary mt-0.5" />
-                    <strong>Location Tracking:</strong> Sends real-time location data to State Emergency Control Rooms.
-                  </li>
-                  <li className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                    <Users className="h-3 w-3 text-primary mt-0.5" />
-                    <strong>Multi-Emergency Access:</strong> Direct link to Police, Fire Brigade, and Medical response.
-                  </li>
-                </ul>
-                <div className="pt-2">
-                  <Button variant="secondary" className="w-full text-[10px] h-8 font-bold" asChild>
-                    <a href="https://112.gov.in/" target="_blank">Learn More about 112 India</a>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
 
         {/* Nearest Hospitals */}
         <section className="space-y-6">
