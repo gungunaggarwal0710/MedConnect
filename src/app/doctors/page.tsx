@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -25,7 +26,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +86,13 @@ export default function DoctorsPage() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("spot");
   const [isBookingSuccess, setIsBookingSuccess] = useState(false);
+  const [bookingRefId, setBookingRefId] = useState("");
+
+  useEffect(() => {
+    if (isBookingSuccess) {
+      setBookingRefId(`MC-${Math.floor(Math.random() * 900000) + 100000}`);
+    }
+  }, [isBookingSuccess]);
 
   const filteredDoctors = useMemo(() => {
     return mockDoctors.filter(doc => {
@@ -139,6 +147,7 @@ export default function DoctorsPage() {
     setSelectedTime("");
     setPaymentMethod("spot");
     setIsBookingSuccess(false);
+    setBookingRefId("");
   };
 
   return (
@@ -234,10 +243,10 @@ export default function DoctorsPage() {
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <div className="flex-1 space-y-1">
+                  <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-start justify-between">
-                      <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{doc.name}</h3>
-                      <Badge variant="secondary" className="bg-green-100 text-green-700 text-[9px] uppercase font-bold whitespace-nowrap">
+                      <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors truncate">{doc.name}</h3>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 text-[9px] uppercase font-bold whitespace-nowrap ml-2">
                         {doc.availability}
                       </Badge>
                     </div>
@@ -451,7 +460,7 @@ export default function DoctorsPage() {
                         <div className="p-4 bg-muted/30 rounded-2xl w-full space-y-2 text-left">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Reference ID:</span>
-                            <span className="font-bold">MC-{Math.floor(Math.random() * 900000) + 100000}</span>
+                            <span className="font-bold">{bookingRefId || 'Generating...'}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Location:</span>
