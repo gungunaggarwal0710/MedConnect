@@ -23,7 +23,8 @@ import {
   Clock,
   CreditCard,
   Wallet,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useMemo, useEffect } from "react";
@@ -75,6 +76,7 @@ export default function DoctorsPage() {
   const db = useFirestore();
   const router = useRouter();
   
+  const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
   const [selectedHospital, setSelectedHospital] = useState("All");
@@ -82,11 +84,16 @@ export default function DoctorsPage() {
 
   // Booking states
   const [bookingDoctor, setBookingDoctor] = useState<any>(null);
-  const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
+  const [bookingDate, setBookingDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("spot");
   const [isBookingSuccess, setIsBookingSuccess] = useState(false);
   const [bookingRefId, setBookingRefId] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+    setBookingDate(new Date());
+  }, []);
 
   useEffect(() => {
     if (isBookingSuccess) {
@@ -149,6 +156,14 @@ export default function DoctorsPage() {
     setIsBookingSuccess(false);
     setBookingRefId("");
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
@@ -372,7 +387,12 @@ export default function DoctorsPage() {
                                 selected={bookingDate}
                                 onSelect={setBookingDate}
                                 className="rounded-md mx-auto"
-                                disabled={(date) => date < new Date() || date > new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)}
+                                disabled={(date) => {
+                                  const today = new Date();
+                                  today.setHours(0, 0, 0, 0);
+                                  const twoWeeksOut = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+                                  return date < today || date > twoWeeksOut;
+                                }}
                               />
                             </div>
                           </div>

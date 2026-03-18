@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -59,6 +60,7 @@ export default function EmergencyPage() {
   const { toast } = useToast();
   const { user } = useUser();
   const db = useFirestore();
+  const [mounted, setMounted] = useState(false);
   const [sosSent, setSosSent] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [bookingAmbulance, setBookingAmbulance] = useState<any>(null);
@@ -79,6 +81,19 @@ export default function EmergencyPage() {
   }, [db, user?.uid]);
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
+
+  useEffect(() => {
+    setMounted(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+      }, () => {
+        setLocation({ lat: 28.6139, lng: 77.2090 });
+      });
+    } else {
+      setLocation({ lat: 28.6139, lng: 77.2090 });
+    }
+  }, []);
 
   // Query for donors in Firestore
   const donorsQuery = useMemoFirebase(() => {
@@ -101,18 +116,6 @@ export default function EmergencyPage() {
     const dbDonors = firestoreDonors || [];
     return [...dbDonors, ...mock];
   }, [firestoreDonors, selectedBloodType]);
-
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
-      }, () => {
-        setLocation({ lat: 28.6139, lng: 77.2090 });
-      });
-    } else {
-      setLocation({ lat: 28.6139, lng: 77.2090 });
-    }
-  }, []);
 
   const handleSOS = () => {
     setSosSent(true);
@@ -149,6 +152,14 @@ export default function EmergencyPage() {
     toast({ title: "Registration Successful", description: "You are now listed as an emergency blood donor." });
     setIsRegistering(false);
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
