@@ -53,7 +53,9 @@ const analysisPrompt = ai.definePrompt({
 export async function aiSymptomAnalysisAndRecommendation(
   input: AiSymptomAnalysisInput
 ): Promise<AiSymptomAnalysisOutput> {
-  let attempts = 3;
+  let attempts = 5;
+  let delay = 2000;
+  
   while (attempts > 0) {
     try {
       const { output } = await analysisPrompt(input);
@@ -64,15 +66,26 @@ export async function aiSymptomAnalysisAndRecommendation(
     } catch (error: any) {
       attempts--;
       const errorMessage = error.message || String(error);
-      const isRetryable = errorMessage.includes('503') || 
-                          errorMessage.includes('high demand') || 
-                          errorMessage.includes('UNAVAILABLE') ||
-                          errorMessage.includes('overloaded');
+      
+      // Check if the error is a transient service error
+      const isRetryable = 
+        errorMessage.includes('503') || 
+        errorMessage.includes('high demand') || 
+        errorMessage.includes('UNAVAILABLE') ||
+        errorMessage.includes('overloaded') ||
+        errorMessage.includes('deadline-exceeded') ||
+        errorMessage.includes('rate limit');
       
       if (isRetryable && attempts > 0) {
-        // Wait for 2 seconds before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait with exponential backoff before retrying
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Increase delay for next attempt
         continue;
+      }
+      
+      // If not retryable or no attempts left, throw a cleaned-up error
+      if (isRetryable) {
+        throw new Error('The AI service is currently experiencing high demand. Please try again in a few moments.');
       }
       throw error;
     }

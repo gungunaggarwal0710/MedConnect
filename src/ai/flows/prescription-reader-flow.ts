@@ -49,7 +49,9 @@ const readerPrompt = ai.definePrompt({
 export async function readPrescription(
   input: PrescriptionReaderInput
 ): Promise<PrescriptionReaderOutput> {
-  let attempts = 3;
+  let attempts = 5;
+  let delay = 2000;
+
   while (attempts > 0) {
     try {
       const { output } = await readerPrompt(input);
@@ -60,15 +62,23 @@ export async function readPrescription(
     } catch (error: any) {
       attempts--;
       const errorMessage = error.message || String(error);
-      const isRetryable = errorMessage.includes('503') || 
-                          errorMessage.includes('high demand') || 
-                          errorMessage.includes('UNAVAILABLE') ||
-                          errorMessage.includes('overloaded');
+      
+      const isRetryable = 
+        errorMessage.includes('503') || 
+        errorMessage.includes('high demand') || 
+        errorMessage.includes('UNAVAILABLE') ||
+        errorMessage.includes('overloaded') ||
+        errorMessage.includes('deadline-exceeded') ||
+        errorMessage.includes('rate limit');
       
       if (isRetryable && attempts > 0) {
-        // Wait for 2 seconds before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2;
         continue;
+      }
+
+      if (isRetryable) {
+        throw new Error('The AI service is currently experiencing high demand. Please try again in a few moments.');
       }
       throw error;
     }
