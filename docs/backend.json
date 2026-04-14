@@ -87,6 +87,23 @@
       },
       "required": ["userId", "name", "bloodType", "phone", "isAvailable"]
     },
+    "EmergencyRequest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmergencyRequest",
+      "type": "object",
+      "description": "Represents an emergency SOS request triggered by a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "resolved"] },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "status", "timestamp"]
+    },
     "InsurancePolicy": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "InsurancePolicy",
@@ -233,6 +250,16 @@
         }
       },
       {
+        "path": "/emergency_requests/{requestId}",
+        "definition": {
+          "entityName": "EmergencyRequest",
+          "schema": {
+            "$ref": "#/backend/entities/EmergencyRequest"
+          },
+          "description": "Real-time emergency SOS requests."
+        }
+      },
+      {
         "path": "/users/{userId}/insurance/{insuranceId}",
         "definition": {
           "entityName": "InsurancePolicy",
@@ -240,6 +267,7 @@
             "$ref": "#/backend/entities/InsurancePolicy"
           },
           "description": "User's insurance policies."
+"
         }
       },
       {

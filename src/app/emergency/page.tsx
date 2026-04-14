@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -12,34 +13,26 @@ import {
   Activity, 
   Loader2, 
   Droplets, 
-  Heart, 
-  Search,
-  PlusCircle,
-  CheckCircle2,
-  Users,
-  Award,
+  Flame, 
   Truck,
-  Flame,
-  UserCheck,
-  Smartphone,
-  Info,
-  ChevronRight,
+  PlusCircle,
+  Award,
   PlayCircle,
-  Video
+  Video,
+  ChevronRight
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { useDoc } from "@/firebase/firestore/use-doc";
-import { doc, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { doc, collection, query, where, serverTimestamp, addDoc } from "firebase/firestore";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogTrigger, 
-  DialogDescription,
-  DialogFooter
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +41,8 @@ import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "@/components/ui/badge";
 import { mockBloodDonors, mockAmbulances } from "@/lib/mock-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -75,6 +70,7 @@ export default function EmergencyPage() {
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
   const [sosSent, setSosSent] = useState(false);
+  const [isSendingAlert, setIsSendingAlert] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [bookingAmbulance, setBookingAmbulance] = useState<any>(null);
   const [activeVideo, setActiveVideo] = useState<any | null>(null);
@@ -94,7 +90,7 @@ export default function EmergencyPage() {
     return doc(db, "users", user.uid);
   }, [db, user?.uid]);
 
-  const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
+  const { data: profile } = useDoc(userDocRef);
 
   useEffect(() => {
     setMounted(true);
@@ -102,14 +98,12 @@ export default function EmergencyPage() {
       navigator.geolocation.getCurrentPosition((position) => {
         setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
       }, () => {
+        // Default to New Delhi if location denied
         setLocation({ lat: 28.6139, lng: 77.2090 });
       });
-    } else {
-      setLocation({ lat: 28.6139, lng: 77.2090 });
     }
   }, []);
 
-  // Query for donors in Firestore
   const donorsQuery = useMemoFirebase(() => {
     if (!db) return null;
     if (selectedBloodType === "All") {
@@ -124,24 +118,64 @@ export default function EmergencyPage() {
 
   const { data: firestoreDonors, isLoading: isDonorsLoading } = useCollection(donorsQuery);
 
-  // Combine Mock Donors and Firestore Donors for a comprehensive list
   const allDonors = useMemo(() => {
     const mock = mockBloodDonors.filter(d => selectedBloodType === "All" || d.bloodType === selectedBloodType);
     const dbDonors = firestoreDonors || [];
     return [...dbDonors, ...mock];
   }, [firestoreDonors, selectedBloodType]);
 
+  const createEmergencyRequest = async (type: string) => {
+    if (!db) return;
+    
+    setIsSendingAlert(true);
+    const colRef = collection(db, "emergency_requests");
+    const requestData = {
+      userId: user?.uid || "anonymous",
+      userName: profile?.name || user?.displayName || "Anonymous",
+      type: type,
+      status: "pending",
+      latitude: location?.lat || 0,
+      longitude: location?.lng || 0,
+      timestamp: serverTimestamp()
+    };
+
+    addDoc(colRef, requestData)
+      .then(() => {
+        setIsSendingAlert(false);
+        toast({
+          title: "Request Logged",
+          description: `Emergency request for ${type} sent to local services.`,
+        });
+      })
+      .catch(async (error) => {
+        setIsSendingAlert(false);
+        const permissionError = new FirestorePermissionError({
+          path: colRef.path,
+          operation: 'create',
+          requestResourceData: requestData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
   const handleSOS = () => {
+    createEmergencyRequest("General SOS");
     setSosSent(true);
     toast({
       title: "SOS ALERT SENT",
-      description: `Alerted ${profile?.emergencyContacts?.length || 0} emergency contacts and nearest hospitals.`,
+      description: `Alerted emergency contacts and nearest hospitals.`,
       variant: "destructive",
     });
   };
 
+  const handleVideoSelection = (video: any) => {
+    setActiveVideo(video);
+    createEmergencyRequest(`First Aid: ${video.title}`);
+  };
+
   const handleBookAmbulance = (amb: any) => {
     setBookingAmbulance(amb);
+    createEmergencyRequest(`Ambulance Booking: ${amb.provider}`);
     toast({
       title: "Ambulance Requested",
       description: `${amb.provider} is dispatched and arriving in ${amb.eta}.`,
@@ -194,10 +228,20 @@ export default function EmergencyPage() {
             {!sosSent ? (
               <button 
                 onClick={handleSOS}
-                className="w-56 h-56 rounded-full bg-destructive shadow-[0_0_60px_rgba(255,107,107,0.6)] flex flex-col items-center justify-center text-white border-[10px] border-white active:scale-95 transition-all animate-pulse-red"
+                disabled={isSendingAlert}
+                className="w-56 h-56 rounded-full bg-destructive shadow-[0_0_60px_rgba(255,107,107,0.6)] flex flex-col items-center justify-center text-white border-[10px] border-white active:scale-95 transition-all animate-pulse-red disabled:opacity-50 disabled:animate-none"
               >
-                <span className="text-5xl font-black italic">SOS</span>
-                <span className="text-[10px] mt-2 uppercase tracking-[0.2em] font-bold opacity-80">Tap to Trigger</span>
+                {isSendingAlert ? (
+                  <>
+                    <Loader2 className="h-10 w-10 animate-spin mb-2" />
+                    <span className="text-xs uppercase font-bold">Sending Alert...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-5xl font-black italic">SOS</span>
+                    <span className="text-[10px] mt-2 uppercase tracking-[0.2em] font-bold opacity-80">Tap to Trigger</span>
+                  </>
+                )}
               </button>
             ) : (
               <Card className="w-full max-w-md border-green-200 bg-green-50/50 shadow-lg">
@@ -208,14 +252,13 @@ export default function EmergencyPage() {
                   <div className="space-y-2">
                     <h2 className="text-xl font-bold text-green-700">Alert System Active</h2>
                     <p className="text-sm text-green-600/80 leading-relaxed px-4">
-                      Your real-time location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} shared with State Emergency Room and {profile?.emergencyContacts?.length || 0} family members.
+                      Your real-time location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} shared with State Emergency Room and family members.
                     </p>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* First-Aid Instructions Button */}
             <Dialog onOpenChange={(open) => !open && setActiveVideo(null)}>
               <DialogTrigger asChild>
                 <Button className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 shadow-xl font-bold text-lg flex items-center gap-3">
@@ -229,7 +272,7 @@ export default function EmergencyPage() {
                     <Activity className="h-5 w-5 text-primary" /> First-Aid Instruction Guides
                   </DialogTitle>
                   <DialogDescription>
-                    Select a category to view life-saving instructions.
+                    Select a category to view life-saving instructions. A request will be logged for responders.
                   </DialogDescription>
                 </DialogHeader>
                 
@@ -241,7 +284,7 @@ export default function EmergencyPage() {
                           key={video.id}
                           variant="outline"
                           className="h-auto p-4 flex items-center justify-between group rounded-2xl border-primary/20 hover:border-primary transition-all text-left"
-                          onClick={() => setActiveVideo(video)}
+                          onClick={() => handleVideoSelection(video)}
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -274,7 +317,7 @@ export default function EmergencyPage() {
                       </div>
                       <div className="bg-muted/30 p-4 rounded-2xl">
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          <strong>Disclaimer:</strong> These instructions are for informational purposes. Always call emergency services (112) immediately in life-threatening situations.
+                          <strong>Disclaimer:</strong> These instructions are for informational purposes. Always call emergency services (112) immediately.
                         </p>
                       </div>
                     </div>
@@ -291,6 +334,7 @@ export default function EmergencyPage() {
             <a 
               key={i} 
               href={`tel:${item.number}`}
+              onClick={() => createEmergencyRequest(`Call: ${item.label}`)}
               className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-transparent hover:border-primary/20 transition-all group"
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white ${item.color} shadow-md group-hover:scale-110 transition-transform`}>
@@ -339,7 +383,7 @@ export default function EmergencyPage() {
                         className="flex-1 h-9 rounded-xl border-green-200 text-green-700"
                         asChild
                       >
-                        <a href={`tel:${amb.phone}`}>Call Unit</a>
+                        <a href={`tel:${amb.phone}`} onClick={() => createEmergencyRequest(`Call Ambulance: ${amb.provider}`)}>Call Unit</a>
                       </Button>
                       <Button 
                         size="sm" 
@@ -439,7 +483,7 @@ export default function EmergencyPage() {
                         </div>
                       </div>
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 bg-red-50 rounded-full shrink-0" asChild>
-                        <a href={`tel:${donor.phone}`}><Phone className="h-4 w-4" /></a>
+                        <a href={`tel:${donor.phone}`} onClick={() => createEmergencyRequest(`Call Donor: ${donor.name}`)}><Phone className="h-4 w-4" /></a>
                       </Button>
                     </div>
                   ))
@@ -472,10 +516,16 @@ export default function EmergencyPage() {
                   </div>
                   <div className="flex gap-2">
                     <Button size="icon" variant="ghost" className="rounded-full bg-secondary/50 text-primary" asChild>
-                      <a href={`tel:${hosp.phone}`}><Phone className="h-4 w-4" /></a>
+                      <a href={`tel:${hosp.phone}`} onClick={() => createEmergencyRequest(`Call Hospital: ${hosp.name}`)}><Phone className="h-4 w-4" /></a>
                     </Button>
                     <Button size="sm" className="bg-primary rounded-xl" asChild>
-                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hosp.name)}`} target="_blank">Navigate</a>
+                      <a 
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hosp.name)}`} 
+                        target="_blank"
+                        onClick={() => createEmergencyRequest(`Navigate to: ${hosp.name}`)}
+                      >
+                        Navigate
+                      </a>
                     </Button>
                   </div>
                 </CardContent>
