@@ -13,27 +13,42 @@ import {
   Activity,
   LogIn,
   ShieldCheck,
-  Lock
+  Lock,
+  LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-const navItems = [
-  { icon: Home, label: "Home", href: "/" },
-  { icon: ShieldAlert, label: "SOS", href: "/emergency", priority: true },
-  { icon: MessageSquare, label: "AI Chat", href: "/ai-chat", protected: true },
-  { icon: Search, label: "Doctors", href: "/doctors" },
-  { icon: Hospital, label: "Hospitals", href: "/hospitals" },
-  { icon: ShieldCheck, label: "Insurance", href: "/insurance", protected: true },
-  { icon: Activity, label: "Stats", href: "/dashboard", protected: true },
-];
+import { doc } from "firebase/firestore";
 
 export function Navigation() {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
+
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile } = useDoc(profileRef);
+
+  const navItems = [
+    { icon: Home, label: "Home", href: "/" },
+    { icon: ShieldAlert, label: "SOS", href: "/emergency", priority: true },
+    { icon: MessageSquare, label: "AI Chat", href: "/ai-chat", protected: true },
+    { icon: Search, label: "Doctors", href: "/doctors" },
+    { icon: Hospital, label: "Hospitals", href: "/hospitals" },
+    { icon: ShieldCheck, label: "Insurance", href: "/insurance", protected: true },
+    { icon: Activity, label: "Stats", href: "/dashboard", protected: true },
+  ];
+
+  // Admin link only for admin users
+  if (profile?.role === "admin") {
+    navItems.push({ icon: LayoutDashboard, label: "Admin", href: "/admin", protected: false });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border flex justify-around items-center py-2 px-4 md:top-0 md:bottom-auto md:justify-between md:px-8 md:py-4 shadow-lg md:shadow-md">
@@ -42,7 +57,7 @@ export function Navigation() {
         <span className="text-xl font-bold text-primary tracking-tight">MedConnect+</span>
       </div>
 
-      <div className="flex justify-around w-full md:w-auto md:gap-8">
+      <div className="flex justify-around w-full md:w-auto md:gap-8 overflow-x-auto no-scrollbar">
         <TooltipProvider>
           {navItems.map((item) => {
             const isProtected = item.protected && !user;
@@ -52,7 +67,7 @@ export function Navigation() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex flex-col items-center gap-1 transition-colors relative",
+                      "flex flex-col items-center gap-1 transition-colors relative min-w-[50px] md:min-w-0",
                       pathname === item.href 
                         ? "text-primary" 
                         : "text-muted-foreground hover:text-primary",
@@ -80,7 +95,7 @@ export function Navigation() {
         <Link
           href={user ? "/profile" : "/login"}
           className={cn(
-            "flex flex-col items-center gap-1 transition-colors md:hidden",
+            "flex flex-col items-center gap-1 transition-colors md:hidden min-w-[50px]",
             pathname === "/profile" || pathname === "/login" ? "text-primary" : "text-muted-foreground"
           )}
         >
