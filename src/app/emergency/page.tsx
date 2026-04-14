@@ -24,7 +24,9 @@ import {
   UserCheck,
   Smartphone,
   Info,
-  ChevronRight
+  ChevronRight,
+  PlayCircle,
+  Video
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -56,14 +58,22 @@ const emergencyContactsList = [
   { label: "Ambulance", number: "102", icon: Truck, color: "bg-green-600" },
 ];
 
+const firstAidVideos = [
+  { id: "v1", title: "CPR Instructions", description: "Step-by-step Cardiopulmonary Resuscitation", filename: "cpr.mp4" },
+  { id: "v2", title: "Choking Relief", description: "Heimlich maneuver for adults and children", filename: "choking.mp4" },
+  { id: "v3", title: "Bleeding Control", description: "Applying pressure and tourniquets", filename: "bleeding.mp4" },
+  { id: "v4", title: "Burn Treatment", description: "Immediate care for thermal burns", filename: "burns.mp4" },
+];
+
 export default function EmergencyPage() {
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user } = userUser();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
   const [sosSent, setSosSent] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [bookingAmbulance, setBookingAmbulance] = useState<any>(null);
+  const [activeVideo, setActiveVideo] = useState<any | null>(null);
   
   // Blood Donor States
   const [selectedBloodType, setSelectedBloodType] = useState<string>("All");
@@ -176,7 +186,7 @@ export default function EmergencyPage() {
             <p className="text-muted-foreground font-medium">Immediate assistance at your fingertips</p>
           </div>
 
-          <div className="flex justify-center py-6">
+          <div className="flex flex-col items-center gap-6 py-6">
             {!sosSent ? (
               <button 
                 onClick={handleSOS}
@@ -200,6 +210,78 @@ export default function EmergencyPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* First-Aid Instructions Button */}
+            <Dialog onOpenChange={(open) => !open && setActiveVideo(null)}>
+              <DialogTrigger asChild>
+                <Button className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 shadow-xl font-bold text-lg flex items-center gap-3">
+                  <PlayCircle className="h-6 w-6" />
+                  First-Aid Instructions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" /> First-Aid Instruction Guides
+                  </DialogTitle>
+                  <DialogDescription>
+                    Select a category to view life-saving instructions.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-6 pt-4">
+                  {!activeVideo ? (
+                    <div className="grid gap-3">
+                      {firstAidVideos.map((video) => (
+                        <Button 
+                          key={video.id}
+                          variant="outline"
+                          className="h-auto p-4 flex items-center justify-between group rounded-2xl border-primary/20 hover:border-primary transition-all"
+                          onClick={() => setActiveVideo(video)}
+                        >
+                          <div className="flex items-center gap-4 text-left">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                              <Video className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm text-foreground">{video.title}</p>
+                              <p className="text-[10px] text-muted-foreground">{video.description}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-lg">{activeVideo.title}</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setActiveVideo(null)}>Back to List</Button>
+                      </div>
+                      <div className="aspect-video rounded-2xl bg-black overflow-hidden shadow-2xl relative">
+                        {/* 
+                          Important: The user must place mp4 files in public/videos/
+                          e.g. public/videos/cpr.mp4
+                        */}
+                        <video 
+                          controls 
+                          className="w-full h-full"
+                          src={`/videos/${activeVideo.filename}`}
+                          poster="/images/video-placeholder.jpg"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                      <div className="bg-muted/30 p-4 rounded-2xl">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          <strong>Disclaimer:</strong> These instructions are for informational purposes. Always call emergency services (112) immediately in life-threatening situations.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 
