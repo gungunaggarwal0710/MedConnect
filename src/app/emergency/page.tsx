@@ -19,13 +19,15 @@ import {
   Award,
   PlayCircle,
   Video,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  CheckCircle2
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { useDoc } from "@/firebase/firestore/use-doc";
-import { doc, collection, query, where, serverTimestamp, addDoc } from "firebase/firestore";
+import { doc, collection, query, where, serverTimestamp, addDoc, orderBy, limit } from "firebase/firestore";
 import { 
   Dialog, 
   DialogContent, 
@@ -91,6 +93,19 @@ export default function EmergencyPage() {
   }, [db, user?.uid]);
 
   const { data: profile } = useDoc(userDocRef);
+
+  // Real-time Alerts Log for UI confirmation
+  const alertsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    // Show user's alerts or just recent system activity for prototype
+    return query(
+      collection(db, "emergency_requests"),
+      orderBy("timestamp", "desc"),
+      limit(5)
+    );
+  }, [db]);
+
+  const { data: recentAlerts, isLoading: isLoadingAlerts } = useCollection(alertsQuery);
 
   useEffect(() => {
     setMounted(true);
@@ -326,6 +341,45 @@ export default function EmergencyPage() {
               </DialogContent>
             </Dialog>
           </div>
+        </section>
+
+        {/* Real-time Alerts Log Section */}
+        <section className="mb-12">
+          <Card className="border-none shadow-md overflow-hidden bg-white">
+            <CardHeader className="bg-muted/50 pb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <CardTitle className="text-sm font-bold">Recent Activity Log</CardTitle>
+              </div>
+              <CardDescription className="text-[10px]">Your SOS requests are stored in Firestore for responders.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {isLoadingAlerts ? (
+                <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
+              ) : recentAlerts && recentAlerts.length > 0 ? (
+                <div className="space-y-2">
+                  {recentAlerts.map((alert) => (
+                    <div key={alert.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${alert.status === 'pending' ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
+                        <div>
+                          <p className="font-bold">{alert.type}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {alert.timestamp?.toDate ? alert.timestamp.toDate().toLocaleTimeString() : 'Just now'}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold">
+                        {alert.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-4 text-xs text-muted-foreground italic">No recent alerts logged.</p>
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         {/* Quick Emergency Numbers */}
