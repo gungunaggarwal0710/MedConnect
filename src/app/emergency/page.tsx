@@ -47,6 +47,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "@/components/ui/badge";
 import { mockBloodDonors, mockAmbulances } from "@/lib/mock-data";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -266,7 +267,7 @@ export default function EmergencyPage() {
                           controls 
                           className="w-full h-full"
                           src={`/videos/${activeVideo.filename}`}
-                          poster="/images/video-placeholder.jpg"
+                          poster={PlaceHolderImages.find(img => img.id === 'first-aid-cpr')?.imageUrl}
                         >
                           Your browser does not support the video tag.
                         </video>
