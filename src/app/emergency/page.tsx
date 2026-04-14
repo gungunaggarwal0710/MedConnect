@@ -63,6 +63,10 @@ const firstAidVideos = [
   { id: "v2", title: "Choking Relief", description: "Heimlich maneuver for adults and children", filename: "choking.mp4" },
   { id: "v3", title: "Bleeding Control", description: "Applying pressure and tourniquets", filename: "bleeding.mp4" },
   { id: "v4", title: "Burn Treatment", description: "Immediate care for thermal burns", filename: "burns.mp4" },
+  { id: "v5", title: "Heart Attack", description: "Recognizing symptoms and immediate response", filename: "heart_attack.mp4" },
+  { id: "v6", title: "Snake Bite", description: "Correct first aid for venomous bites", filename: "snake_bite.mp4" },
+  { id: "v7", title: "Sprain Care", description: "RICE method for joints and ligaments", filename: "sprain.mp4" },
+  { id: "v8", title: "Allergic Reaction", description: "Using an EpiPen and monitoring shock", filename: "allergy.mp4" },
 ];
 
 export default function EmergencyPage() {
@@ -231,24 +235,24 @@ export default function EmergencyPage() {
                 
                 <div className="space-y-6 pt-4">
                   {!activeVideo ? (
-                    <div className="grid gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {firstAidVideos.map((video) => (
                         <Button 
                           key={video.id}
                           variant="outline"
-                          className="h-auto p-4 flex items-center justify-between group rounded-2xl border-primary/20 hover:border-primary transition-all"
+                          className="h-auto p-4 flex items-center justify-between group rounded-2xl border-primary/20 hover:border-primary transition-all text-left"
                           onClick={() => setActiveVideo(video)}
                         >
-                          <div className="flex items-center gap-4 text-left">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                               <Video className="h-5 w-5" />
                             </div>
-                            <div>
-                              <p className="font-bold text-sm text-foreground">{video.title}</p>
-                              <p className="text-[10px] text-muted-foreground">{video.description}</p>
+                            <div className="min-w-0">
+                              <p className="font-bold text-sm text-foreground truncate">{video.title}</p>
+                              <p className="text-[10px] text-muted-foreground line-clamp-1">{video.description}</p>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                         </Button>
                       ))}
                     </div>
@@ -259,10 +263,6 @@ export default function EmergencyPage() {
                         <Button variant="ghost" size="sm" onClick={() => setActiveVideo(null)}>Back to List</Button>
                       </div>
                       <div className="aspect-video rounded-2xl bg-black overflow-hidden shadow-2xl relative">
-                        {/* 
-                          Important: The user must place mp4 files in public/videos/
-                          e.g. public/videos/cpr.mp4
-                        */}
                         <video 
                           controls 
                           className="w-full h-full"
