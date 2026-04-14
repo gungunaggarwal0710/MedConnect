@@ -53,11 +53,31 @@ const analysisPrompt = ai.definePrompt({
 export async function aiSymptomAnalysisAndRecommendation(
   input: AiSymptomAnalysisInput
 ): Promise<AiSymptomAnalysisOutput> {
-  const { output } = await analysisPrompt(input);
-  if (!output) {
-    throw new Error('The AI was unable to generate a valid medical assessment at this time.');
+  let attempts = 3;
+  while (attempts > 0) {
+    try {
+      const { output } = await analysisPrompt(input);
+      if (!output) {
+        throw new Error('The AI was unable to generate a valid medical assessment at this time.');
+      }
+      return output;
+    } catch (error: any) {
+      attempts--;
+      const errorMessage = error.message || String(error);
+      const isRetryable = errorMessage.includes('503') || 
+                          errorMessage.includes('high demand') || 
+                          errorMessage.includes('UNAVAILABLE') ||
+                          errorMessage.includes('overloaded');
+      
+      if (isRetryable && attempts > 0) {
+        // Wait for 2 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw error;
+    }
   }
-  return output;
+  throw new Error('The AI service is currently experiencing high demand. Please try again in a few moments.');
 }
 
 const aiSymptomAnalysisFlow = ai.defineFlow(

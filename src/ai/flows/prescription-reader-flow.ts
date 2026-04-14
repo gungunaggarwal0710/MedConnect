@@ -49,11 +49,31 @@ const readerPrompt = ai.definePrompt({
 export async function readPrescription(
   input: PrescriptionReaderInput
 ): Promise<PrescriptionReaderOutput> {
-  const { output } = await readerPrompt(input);
-  if (!output) {
-    throw new Error('The AI was unable to read the prescription clearly. Please try a clearer photo.');
+  let attempts = 3;
+  while (attempts > 0) {
+    try {
+      const { output } = await readerPrompt(input);
+      if (!output) {
+        throw new Error('The AI was unable to read the prescription clearly. Please try a clearer photo.');
+      }
+      return output;
+    } catch (error: any) {
+      attempts--;
+      const errorMessage = error.message || String(error);
+      const isRetryable = errorMessage.includes('503') || 
+                          errorMessage.includes('high demand') || 
+                          errorMessage.includes('UNAVAILABLE') ||
+                          errorMessage.includes('overloaded');
+      
+      if (isRetryable && attempts > 0) {
+        // Wait for 2 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw error;
+    }
   }
-  return output;
+  throw new Error('The AI service is currently experiencing high demand. Please try again in a few moments.');
 }
 
 const prescriptionReaderFlow = ai.defineFlow(
