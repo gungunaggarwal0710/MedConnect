@@ -94,19 +94,6 @@ export default function EmergencyPage() {
 
   const { data: profile } = useDoc(userDocRef);
 
-  // Real-time Alerts Log for UI confirmation
-  const alertsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    // Show user's alerts or just recent system activity for prototype
-    return query(
-      collection(db, "emergency_requests"),
-      orderBy("timestamp", "desc"),
-      limit(5)
-    );
-  }, [db]);
-
-  const { data: recentAlerts, isLoading: isLoadingAlerts } = useCollection(alertsQuery);
-
   useEffect(() => {
     setMounted(true);
     if ("geolocation" in navigator) {
@@ -158,8 +145,8 @@ export default function EmergencyPage() {
       .then(() => {
         setIsSendingAlert(false);
         toast({
-          title: "Request Logged",
-          description: `Emergency request for ${type} sent to local services.`,
+          title: "Emergency Logged",
+          description: `Your ${type} request has been securely logged for responders.`,
         });
       })
       .catch(async (error) => {
@@ -267,7 +254,7 @@ export default function EmergencyPage() {
                   <div className="space-y-2">
                     <h2 className="text-xl font-bold text-green-700">Alert System Active</h2>
                     <p className="text-sm text-green-600/80 leading-relaxed px-4">
-                      Your real-time location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} shared with State Emergency Room and family members.
+                      Your real-time location {location ? `(${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E)` : '(fetching...)'} has been logged and shared with emergency responders.
                     </p>
                   </div>
                 </CardContent>
@@ -341,45 +328,6 @@ export default function EmergencyPage() {
               </DialogContent>
             </Dialog>
           </div>
-        </section>
-
-        {/* Real-time Alerts Log Section */}
-        <section className="mb-12">
-          <Card className="border-none shadow-md overflow-hidden bg-white">
-            <CardHeader className="bg-muted/50 pb-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <CardTitle className="text-sm font-bold">Recent Activity Log</CardTitle>
-              </div>
-              <CardDescription className="text-[10px]">Your SOS requests are stored in Firestore for responders.</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {isLoadingAlerts ? (
-                <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
-              ) : recentAlerts && recentAlerts.length > 0 ? (
-                <div className="space-y-2">
-                  {recentAlerts.map((alert) => (
-                    <div key={alert.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border text-xs">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${alert.status === 'pending' ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
-                        <div>
-                          <p className="font-bold">{alert.type}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {alert.timestamp?.toDate ? alert.timestamp.toDate().toLocaleTimeString() : 'Just now'}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-[9px] uppercase font-bold">
-                        {alert.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center py-4 text-xs text-muted-foreground italic">No recent alerts logged.</p>
-              )}
-            </CardContent>
-          </Card>
         </section>
 
         {/* Quick Emergency Numbers */}
