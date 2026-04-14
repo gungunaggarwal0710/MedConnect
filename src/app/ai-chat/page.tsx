@@ -1,15 +1,18 @@
+
 "use client";
 
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity, RefreshCcw, Star, MapPin } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Upload, Sparkles, AlertCircle, Loader2, Stethoscope, Activity, RefreshCcw, Star, MapPin, Lock } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { aiSymptomAnalysisAndRecommendation } from "@/ai/flows/ai-symptom-analysis-and-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
 import { mockDoctors } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
+import { useUser } from "@/firebase";
+import Link from "next/link";
 
 type AnalysisResult = {
   analysis: string;
@@ -19,10 +22,16 @@ type AnalysisResult = {
 
 export default function AIChatPage() {
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
   const [symptoms, setSymptoms] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [image, setImage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,6 +81,41 @@ export default function AIChatPage() {
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 3);
   }, [result]);
+
+  if (!mounted || isUserLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
+        <Navigation />
+        <main className="max-w-md mx-auto px-4 mt-20 text-center">
+          <Card className="border-none shadow-2xl p-8 rounded-3xl">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="h-10 w-10 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold mb-4">AI Access Restricted</CardTitle>
+            <CardDescription className="text-base mb-8">
+              AI Symptom Analysis is a personalized medical feature. Please log in to start a consultation with MedConnect+ AI.
+            </CardDescription>
+            <div className="flex flex-col gap-3">
+              <Button asChild className="bg-primary h-12 text-lg rounded-2xl shadow-xl">
+                <Link href="/login">Login to Start</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-12 text-muted-foreground">
+                <Link href="/register">Join MedConnect+</Link>
+              </Button>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">

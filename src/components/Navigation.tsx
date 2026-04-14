@@ -12,21 +12,23 @@ import {
   ShieldAlert,
   Activity,
   LogIn,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
   { icon: ShieldAlert, label: "SOS", href: "/emergency", priority: true },
-  { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
+  { icon: MessageSquare, label: "AI Chat", href: "/ai-chat", protected: true },
   { icon: Search, label: "Doctors", href: "/doctors" },
   { icon: Hospital, label: "Hospitals", href: "/hospitals" },
-  { icon: ShieldCheck, label: "Insurance", href: "/insurance" },
-  { icon: Activity, label: "Stats", href: "/dashboard" },
+  { icon: ShieldCheck, label: "Insurance", href: "/insurance", protected: true },
+  { icon: Activity, label: "Stats", href: "/dashboard", protected: true },
 ];
 
 export function Navigation() {
@@ -41,22 +43,39 @@ export function Navigation() {
       </div>
 
       <div className="flex justify-around w-full md:w-auto md:gap-8">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center gap-1 transition-colors",
-              pathname === item.href 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-primary",
-              item.priority && "text-destructive"
-            )}
-          >
-            <item.icon className={cn("h-6 w-6", item.priority && "animate-pulse")} />
-            <span className="text-[10px] md:text-sm font-medium">{item.label}</span>
-          </Link>
-        ))}
+        <TooltipProvider>
+          {navItems.map((item) => {
+            const isProtected = item.protected && !user;
+            return (
+              <Tooltip key={item.href}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex flex-col items-center gap-1 transition-colors relative",
+                      pathname === item.href 
+                        ? "text-primary" 
+                        : "text-muted-foreground hover:text-primary",
+                      item.priority && "text-destructive",
+                      isProtected && "opacity-60"
+                    )}
+                  >
+                    <item.icon className={cn("h-6 w-6", item.priority && "animate-pulse")} />
+                    <span className="text-[10px] md:text-sm font-medium">{item.label}</span>
+                    {isProtected && (
+                      <Lock className="h-2 w-2 absolute top-0 -right-1 text-muted-foreground" />
+                    )}
+                  </Link>
+                </TooltipTrigger>
+                {isProtected && (
+                  <TooltipContent>
+                    <p className="text-xs">Login required for this feature</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
+        </TooltipProvider>
         
         <Link
           href={user ? "/profile" : "/login"}

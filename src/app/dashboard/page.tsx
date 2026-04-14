@@ -37,7 +37,8 @@ import {
   Users,
   BriefcaseMedical,
   CalendarCheck,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -66,7 +67,7 @@ const healthRecordSchema = z.object({
 type HealthRecordValues = z.infer<typeof healthRecordSchema>;
 
 export default function DashboardPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
 
@@ -81,10 +82,37 @@ export default function DashboardPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted || isProfileLoading) {
+  if (!mounted || isUserLoading || (user && isProfileLoading)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
+        <Navigation />
+        <main className="max-w-md mx-auto px-4 mt-20 text-center">
+          <Card className="border-none shadow-2xl p-8 rounded-3xl">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="h-10 w-10 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold mb-4">Login Required</CardTitle>
+            <CardDescription className="text-base mb-8">
+              To view your personalized health trends, appointments, and medical records, please log in to your account.
+            </CardDescription>
+            <div className="flex flex-col gap-3">
+              <Button asChild className="bg-primary h-12 text-lg rounded-2xl shadow-xl">
+                <Link href="/login">Login Now</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-12 text-muted-foreground">
+                <Link href="/register">Create an Account</Link>
+              </Button>
+            </div>
+          </Card>
+        </main>
       </div>
     );
   }
@@ -105,7 +133,6 @@ function DoctorDashboard({ profile }: { profile: any }) {
   const { user } = useUser();
   const db = useFirestore();
   
-  // Query all appointments in the top-level collection where doctorId matches
   const doctorAppointmentsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
@@ -260,7 +287,6 @@ function PatientDashboard({ profile }: { profile: any }) {
   const db = useFirestore();
   const { toast } = useToast();
   
-  // Prescription Reader States
   const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
   const [prescriptionImage, setPrescriptionImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -280,7 +306,6 @@ function PatientDashboard({ profile }: { profile: any }) {
 
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    // Query top-level appointments where userId matches
     return query(
       collection(db, "appointments"),
       where("userId", "==", user.uid),
@@ -753,7 +778,6 @@ function PatientDashboard({ profile }: { profile: any }) {
         </div>
       </div>
 
-      {/* Detailed Prescription Review Modal */}
       <Dialog open={!!viewingPrescription} onOpenChange={(open) => !open && setViewingPrescription(null)}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>

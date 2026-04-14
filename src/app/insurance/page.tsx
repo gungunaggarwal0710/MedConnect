@@ -23,14 +23,16 @@ import {
   Hospital as HospitalIcon,
   CheckCircle2,
   XCircle,
-  Info
+  Info,
+  Lock
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { hospitals } from "@/app/hospitals/page";
+import Link from "next/link";
 
 export default function InsurancePage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
@@ -79,7 +81,40 @@ export default function InsurancePage() {
     setNewClaim({ policyId: "", amount: 0, description: "" });
   };
 
-  if (!mounted) return null;
+  if (!mounted || isUserLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
+        <Navigation />
+        <main className="max-w-md mx-auto px-4 mt-20 text-center">
+          <Card className="border-none shadow-2xl p-8 rounded-3xl">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="h-10 w-10 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold mb-4">Insurance Portal Locked</CardTitle>
+            <CardDescription className="text-base mb-8">
+              Managing insurance policies and filing claims requires a secure account. Please log in to continue.
+            </CardDescription>
+            <div className="flex flex-col gap-3">
+              <Button asChild className="bg-primary h-12 text-lg rounded-2xl shadow-xl">
+                <Link href="/login">Secure Login</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-12 text-muted-foreground">
+                <Link href="/register">Register New Account</Link>
+              </Button>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
