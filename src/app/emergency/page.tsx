@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navigation } from "@/components/Navigation";
@@ -67,7 +66,7 @@ const firstAidVideos = [
 
 export default function EmergencyPage() {
   const { toast } = useToast();
-  const { user } = userUser();
+  const { user } = useUser();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
   const [sosSent, setSosSent] = useState(false);
