@@ -13,9 +13,17 @@ import {
   Navigation as NavIcon,
   Phone,
   Search,
-  ExternalLink
+  ExternalLink,
+  Filter
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 
@@ -24,6 +32,7 @@ export const hospitals = [
     id: 1,
     name: "Max Super Speciality Hospital",
     location: "Saket, New Delhi",
+    region: "Delhi",
     phone: "+911126515050",
     address: "1-2, Press Enclave Road, Saket, New Delhi, Delhi 110017",
     beds: 120,
@@ -38,6 +47,7 @@ export const hospitals = [
     id: 2,
     name: "Indraprastha Apollo Hospital",
     location: "Sarita Vihar, New Delhi",
+    region: "Delhi",
     phone: "+911171791090",
     address: "Mathura Rd, Sarita Vihar, New Delhi, Delhi 110076",
     beds: 150,
@@ -49,9 +59,55 @@ export const hospitals = [
     acceptedInsurance: ["Apollo Munich", "Star Health", "ICICI Lombard", "Religare", "CGHS"]
   },
   {
+    id: 7,
+    name: "Kailash Hospital & Heart Institute",
+    location: "Sector 27, Noida",
+    region: "Noida",
+    phone: "+911202444444",
+    address: "H-33, Sector 27, Noida, Uttar Pradesh 201301",
+    beds: 100,
+    icu: 20,
+    ventilators: 10,
+    distance: "1.2 km",
+    rating: 4.8,
+    verified: true,
+    acceptedInsurance: ["LIC", "Star Health", "CGHS", "HDFC ERGO"]
+  },
+  {
+    id: 8,
+    name: "Fortis Hospital Noida",
+    location: "Sector 62, Noida",
+    region: "Noida",
+    phone: "+911206622222",
+    address: "B-22, Sector 62, Noida, Uttar Pradesh 201301",
+    beds: 130,
+    icu: 35,
+    ventilators: 18,
+    distance: "4.5 km",
+    rating: 4.7,
+    verified: true,
+    acceptedInsurance: ["Max Bupa", "Cigna TTK", "Star Health", "Religare"]
+  },
+  {
+    id: 9,
+    name: "Jaypee Hospital",
+    location: "Sector 128, Noida",
+    region: "Noida",
+    phone: "+911204122222",
+    address: "Wish Town, Sector 128, Noida, Uttar Pradesh 201304",
+    beds: 150,
+    icu: 45,
+    ventilators: 25,
+    distance: "9.8 km",
+    rating: 4.9,
+    verified: true,
+    acceptedInsurance: ["Apollo Munich", "Star Health", "ICICI Lombard", "Religare"]
+  },
+  {
     id: 3,
     name: "Batra Hospital & Medical Research Centre",
     location: "Tughlakabad, New Delhi",
+    region: "Delhi",
     phone: "+911129958747",
     address: "1, Mehrauli - Badarpur Rd, Tughlakabad Institutional Area, Vayusenabad, New Delhi, Delhi 110062",
     beds: 85,
@@ -66,6 +122,7 @@ export const hospitals = [
     id: 4,
     name: "Fortis Memorial Research Institute",
     location: "Sector 44, Gurugram",
+    region: "Gurugram",
     phone: "+911244962200",
     address: "Sector - 44, Opposite HUDA City Centre, Gurugram, Haryana 122002",
     beds: 110,
@@ -77,9 +134,25 @@ export const hospitals = [
     acceptedInsurance: ["Max Bupa", "Cigna TTK", "Star Health", "Religare"]
   },
   {
+    id: 10,
+    name: "Metro Hospital & Heart Institute",
+    location: "Sector 11, Noida",
+    region: "Noida",
+    phone: "+911204366666",
+    address: "L-94, Sector 11, Noida, Uttar Pradesh 201301",
+    beds: 80,
+    icu: 15,
+    ventilators: 5,
+    distance: "2.1 km",
+    rating: 4.6,
+    verified: true,
+    acceptedInsurance: ["Star Health", "NICL", "Reliance General", "CGHS"]
+  },
+  {
     id: 5,
     name: "Sir Ganga Ram Hospital",
     location: "Rajinder Nagar, New Delhi",
+    region: "Delhi",
     phone: "+911125750000",
     address: "Sir Ganga Ram Hospital Marg, Old Rajinder Nagar, Rajinder Nagar, New Delhi, Delhi 110060",
     beds: 95,
@@ -94,6 +167,7 @@ export const hospitals = [
     id: 6,
     name: "AIIMS Delhi",
     location: "Ansari Nagar, New Delhi",
+    region: "Delhi",
     phone: "+911126588500",
     address: "Ansari Nagar, Ansari Nagar East, New Delhi, Delhi 110029",
     beds: 40,
@@ -106,15 +180,20 @@ export const hospitals = [
   }
 ];
 
+const regions = ["All", "Delhi", "Noida", "Gurugram"];
+
 export default function HospitalsPage() {
   const [search, setSearch] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("All");
 
   const filteredHospitals = useMemo(() => {
-    return hospitals.filter(h => 
-      h.name.toLowerCase().includes(search.toLowerCase()) || 
-      h.location.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search]);
+    return hospitals.filter(h => {
+      const matchesSearch = h.name.toLowerCase().includes(search.toLowerCase()) || 
+                          h.location.toLowerCase().includes(search.toLowerCase());
+      const matchesRegion = selectedRegion === "All" || h.region === selectedRegion;
+      return matchesSearch && matchesRegion;
+    });
+  }, [search, selectedRegion]);
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">
@@ -126,14 +205,47 @@ export default function HospitalsPage() {
           <p className="text-muted-foreground">Live tracking of available resources and specialist facilities in the NCR region.</p>
         </div>
 
-        <div className="relative mb-8">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by hospital name or location..." 
-            className="pl-10 bg-white border-none shadow-md h-12 rounded-xl"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by hospital name or area..." 
+              className="pl-10 bg-white border-none shadow-md h-12 rounded-xl"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="bg-white p-1 rounded-xl shadow-md border flex items-center h-12">
+              <div className="px-3 text-muted-foreground">
+                <Filter className="h-4 w-4" />
+              </div>
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger className="w-[150px] border-none shadow-none h-full bg-transparent focus:ring-0">
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-none shadow-xl">
+                  {regions.map(region => (
+                    <SelectItem key={region} value={region}>{region}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {(search || selectedRegion !== "All") && (
+              <Button 
+                variant="ghost" 
+                className="text-primary font-bold"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedRegion("All");
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -151,7 +263,10 @@ export default function HospitalsPage() {
                         <MapPin className="h-3 w-3" /> {hosp.location}
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-bold bg-white">{hosp.distance}</Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="outline" className="text-[10px] font-bold bg-white">{hosp.distance}</Badge>
+                      <Badge className="bg-primary/10 text-primary text-[9px] border-none uppercase font-black">{hosp.region}</Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -239,7 +354,7 @@ export default function HospitalsPage() {
               </p>
               <div className="absolute bottom-6 left-6 right-6 p-4 bg-white rounded-2xl shadow-xl flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold">Showing nearby facilities</p>
+                  <p className="text-sm font-bold">Showing {selectedRegion} facilities</p>
                   <p className="text-[10px] text-muted-foreground">NCR Metropolitan Region</p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
