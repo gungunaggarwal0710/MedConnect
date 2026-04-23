@@ -96,10 +96,10 @@ export default function DoctorsPage() {
   }, []);
 
   useEffect(() => {
-    if (isBookingSuccess) {
+    if (isBookingSuccess && !bookingRefId) {
       setBookingRefId(`MC-${Math.floor(Math.random() * 900000) + 100000}`);
     }
-  }, [isBookingSuccess]);
+  }, [isBookingSuccess, bookingRefId]);
 
   const filteredDoctors = useMemo(() => {
     return mockDoctors.filter(doc => {
@@ -121,11 +121,16 @@ export default function DoctorsPage() {
     }
 
     if (!selectedTime) {
-      toast({ title: "Select Time", description: "Please choose a time slot for your appointment.", variant: "destructive" });
+      toast({ title: "Select Time", description: "Please choose a time slot.", variant: "destructive" });
+      return;
+    }
+
+    if (!bookingDate) {
+      toast({ title: "Select Date", description: "Please choose a date.", variant: "destructive" });
       return;
     }
     
-    if (db && user.uid) {
+    if (db && user.uid && bookingDoctor) {
       const appointmentsRef = collection(db, "appointments");
       addDocumentNonBlocking(appointmentsRef, {
         userId: user.uid,
@@ -133,19 +138,19 @@ export default function DoctorsPage() {
         doctorName: bookingDoctor.name,
         specialty: bookingDoctor.specialty,
         hospitalName: bookingDoctor.location,
-        date: bookingDate?.toISOString(),
+        date: bookingDate.toISOString(),
         time: selectedTime,
         paymentMethod: paymentMethod,
         status: "scheduled",
         createdAt: serverTimestamp()
       });
-    }
 
-    setIsBookingSuccess(true);
-    toast({ 
-      title: "Booking Confirmed!", 
-      description: `Appointment with ${bookingDoctor.name} on ${bookingDate?.toLocaleDateString()} at ${selectedTime}.` 
-    });
+      setIsBookingSuccess(true);
+      toast({ 
+        title: "Booking Confirmed!", 
+        description: `Appointment with ${bookingDoctor.name} on ${bookingDate.toLocaleDateString()} at ${selectedTime}.` 
+      });
+    }
   };
 
   const resetBooking = () => {
@@ -172,7 +177,7 @@ export default function DoctorsPage() {
       <main className="max-w-7xl mx-auto px-4">
         <div className="mb-8 space-y-4">
           <h1 className="text-3xl font-bold">Find a Specialist</h1>
-          <p className="text-muted-foreground">Search and filter top doctors from Apollo, Max, and Batra Hospitals.</p>
+          <p className="text-muted-foreground">Search and filter top doctors from our hospital network.</p>
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
@@ -273,7 +278,7 @@ export default function DoctorsPage() {
                     </div>
                     <div className="flex flex-col gap-1 text-[11px] text-muted-foreground pt-1">
                       <span className="flex items-center gap-1 leading-tight"><MapPin className="h-3 w-3 shrink-0" /> {doc.location}</span>
-                      <span className="font-bold text-primary text-sm">₹{doc.fee} <span className="text-[10px] text-muted-foreground">/ consultation</span></span>
+                      <span className="font-bold text-primary text-sm">₹{doc.fee} <span className="text-[10px] text-muted-foreground">/ session</span></span>
                     </div>
                   </div>
                 </div>
@@ -282,7 +287,7 @@ export default function DoctorsPage() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm" className="flex-1 bg-white hover:bg-primary/5 border-primary/20 text-primary font-bold">
-                      View Profile
+                      Profile
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none rounded-3xl">
@@ -308,9 +313,6 @@ export default function DoctorsPage() {
                              <Badge className="bg-white/20 hover:bg-white/30 text-white border-none">
                                <Star className="h-3 w-3 mr-1 fill-white" /> {doc.rating}
                              </Badge>
-                             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none">
-                               {doc.reviews} Reviews
-                             </Badge>
                           </div>
                         </div>
                       </div>
@@ -319,41 +321,27 @@ export default function DoctorsPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
-                            <GraduationCap className="h-3 w-3" /> Qualifications
+                            Qualifications
                           </p>
                           <p className="text-sm font-bold">{doc.degree}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
-                            <History className="h-3 w-3" /> Experience
+                            Experience
                           </p>
                           <p className="text-sm font-bold">{doc.experience} Years</p>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
-                          <Award className="h-3 w-3" /> About Specialist
-                        </p>
-                        <p className="text-sm text-muted-foreground leading-relaxed italic">
-                          "{doc.about}"
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> Practice Location
-                        </p>
-                        <p className="text-sm font-medium">{doc.location}</p>
-                      </div>
-
+                      <p className="text-sm text-muted-foreground italic leading-relaxed">
+                        "{doc.about}"
+                      </p>
                       <div className="pt-4 border-t flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-muted-foreground">Consultation Fee</p>
+                          <p className="text-xs text-muted-foreground">Fee</p>
                           <p className="text-2xl font-black text-primary">₹{doc.fee}</p>
                         </div>
                         <Button 
-                          className="bg-primary px-8 h-12 text-lg rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                          className="bg-primary px-8 h-12 text-lg rounded-2xl"
                           onClick={() => setBookingDoctor(doc)}
                         >
                           Book Now
@@ -363,164 +351,138 @@ export default function DoctorsPage() {
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={!!bookingDoctor} onOpenChange={(open) => !open && resetBooking()}>
-                  <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none rounded-3xl max-h-[90vh] overflow-y-auto">
-                    {!isBookingSuccess ? (
-                      <div className="space-y-0">
-                        <div className="p-6 bg-primary text-white">
-                          <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold text-white">Book Your Slot</DialogTitle>
-                            <DialogDescription className="text-white/80">
-                              Schedule a consultation with {bookingDoctor?.name}
-                            </DialogDescription>
-                          </DialogHeader>
-                        </div>
-                        
-                        <div className="p-6 space-y-6">
-                          <div className="space-y-3">
-                            <Label className="text-sm font-bold flex items-center gap-2">
-                              <CalendarIcon className="h-4 w-4 text-primary" /> Select Consultation Date
-                            </Label>
-                            <div className="border rounded-2xl p-2 bg-muted/5">
-                              <Calendar
-                                mode="single"
-                                selected={bookingDate}
-                                onSelect={setBookingDate}
-                                className="rounded-md mx-auto"
-                                disabled={(date) => {
-                                  const today = new Date();
-                                  today.setHours(0, 0, 0, 0);
-                                  const twoWeeksOut = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-                                  return date < today || date > twoWeeksOut;
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="text-sm font-bold flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-primary" /> Available Time Slots
-                            </Label>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                              {timeSlots.map((time) => (
-                                <button
-                                  key={time}
-                                  onClick={() => setSelectedTime(time)}
-                                  className={`py-2 px-3 text-xs font-bold rounded-xl border-2 transition-all ${
-                                    selectedTime === time 
-                                      ? "bg-primary border-primary text-white shadow-md" 
-                                      : "bg-white border-muted hover:border-primary/30"
-                                  }`}
-                                >
-                                  {time}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="text-sm font-bold flex items-center gap-2">
-                              <CreditCard className="h-4 w-4 text-primary" /> Payment Method
-                            </Label>
-                            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
-                              <div>
-                                <RadioGroupItem value="prepaid" id="prepaid" className="peer sr-only" />
-                                <Label
-                                  htmlFor="prepaid"
-                                  className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-white p-4 hover:bg-muted/20 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
-                                >
-                                  <Wallet className="mb-2 h-6 w-6 text-primary" />
-                                  <div className="text-center">
-                                    <p className="text-xs font-bold">Prepaid Online</p>
-                                    <p className="text-[10px] text-muted-foreground">Instant Confirmation</p>
-                                  </div>
-                                </Label>
-                              </div>
-                              <div>
-                                <RadioGroupItem value="spot" id="spot" className="peer sr-only" />
-                                <Label
-                                  htmlFor="spot"
-                                  className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-white p-4 hover:bg-muted/20 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
-                                >
-                                  <CreditCard className="mb-2 h-6 w-6 text-primary" />
-                                  <div className="text-center">
-                                    <p className="text-xs font-bold">Pay at Hospital</p>
-                                    <p className="text-[10px] text-muted-foreground">On-the-spot Payment</p>
-                                  </div>
-                                </Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-
-                          <div className="pt-4 border-t flex items-center justify-between">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Total Consultation Fee</p>
-                              <p className="text-2xl font-black text-primary">₹{bookingDoctor?.fee}</p>
-                            </div>
-                            <Button 
-                              className="bg-primary px-8 h-12 text-lg rounded-2xl shadow-xl hover:scale-105 transition-transform"
-                              onClick={handleConfirmBooking}
-                            >
-                              Confirm & Book
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-12 text-center space-y-6 bg-white flex flex-col items-center justify-center min-h-[400px]">
-                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 animate-in zoom-in-50 duration-500">
-                          <CheckCircle2 className="h-12 w-12" />
-                        </div>
-                        <div className="space-y-2">
-                          <h2 className="text-3xl font-black text-foreground">Booking Successful!</h2>
-                          <p className="text-muted-foreground max-w-xs mx-auto">
-                            Your appointment with {bookingDoctor?.name} is confirmed for {bookingDate?.toLocaleDateString()} at {selectedTime}.
-                          </p>
-                        </div>
-                        <div className="p-4 bg-muted/30 rounded-2xl w-full space-y-2 text-left">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Reference ID:</span>
-                            <span className="font-bold">{bookingRefId || 'Generating...'}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Location:</span>
-                            <span className="font-bold">{bookingDoctor?.location.split(',')[0]}</span>
-                          </div>
-                        </div>
-                        <Button 
-                          className="w-full bg-primary h-12 rounded-2xl" 
-                          onClick={resetBooking}
-                        >
-                          Done
-                        </Button>
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  size="sm" 
+                  className="flex-1 bg-primary text-white font-bold"
+                  onClick={() => setBookingDoctor(doc)}
+                >
+                  Book Slot
+                </Button>
               </CardFooter>
             </Card>
           ))}
-          {filteredDoctors.length === 0 && (
-            <div className="col-span-full text-center py-24 text-muted-foreground bg-white rounded-3xl border-2 border-dashed flex flex-col items-center gap-4">
-              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center opacity-20">
-                <Search className="h-10 w-10" />
+        </div>
+      </main>
+
+      {/* Global Booking Dialog - Moved outside loop to prevent flickering */}
+      <Dialog open={!!bookingDoctor} onOpenChange={(open) => !open && resetBooking()}>
+        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none rounded-3xl max-h-[90vh] overflow-y-auto">
+          {!isBookingSuccess ? (
+            <div className="space-y-0">
+              <div className="p-6 bg-primary text-white">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-white">Schedule Appointment</DialogTitle>
+                  <DialogDescription className="text-white/80">
+                    Consultation with {bookingDoctor?.name}
+                  </DialogDescription>
+                </DialogHeader>
               </div>
-              <div>
-                <p className="text-lg font-bold text-foreground">No specialists found</p>
-                <p className="text-sm">Try adjusting your filters or search keywords.</p>
+              
+              <div className="p-6 space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" /> Select Date
+                  </Label>
+                  <div className="border rounded-2xl p-2 bg-muted/5">
+                    <Calendar
+                      mode="single"
+                      selected={bookingDate}
+                      onSelect={setBookingDate}
+                      className="rounded-md mx-auto"
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const twoWeeksOut = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+                        return date < today || date > twoWeeksOut;
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" /> Available Slots
+                  </Label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {timeSlots.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        className={`py-2 px-3 text-xs font-bold rounded-xl border-2 transition-all ${
+                          selectedTime === time 
+                            ? "bg-primary border-primary text-white shadow-md" 
+                            : "bg-white border-muted hover:border-primary/30"
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-primary" /> Payment
+                  </Label>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
+                    <div>
+                      <RadioGroupItem value="prepaid" id="prepaid" className="peer sr-only" />
+                      <Label
+                        htmlFor="prepaid"
+                        className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-white p-4 hover:bg-muted/20 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                      >
+                        <Wallet className="mb-2 h-6 w-6 text-primary" />
+                        <span className="text-xs font-bold">Online</span>
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem value="spot" id="spot" className="peer sr-only" />
+                      <Label
+                        htmlFor="spot"
+                        className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-white p-4 hover:bg-muted/20 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                      >
+                        <CreditCard className="mb-2 h-6 w-6 text-primary" />
+                        <span className="text-xs font-bold">At Hospital</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="pt-4 border-t flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Fee</p>
+                    <p className="text-2xl font-black text-primary">₹{bookingDoctor?.fee}</p>
+                  </div>
+                  <Button 
+                    className="bg-primary px-8 h-12 text-lg rounded-2xl"
+                    onClick={handleConfirmBooking}
+                  >
+                    Confirm Booking
+                  </Button>
+                </div>
               </div>
-              <Button variant="link" className="text-primary font-bold" onClick={() => {
-                  setSearch("");
-                  setSelectedSpecialty("All");
-                  setSelectedHospital("All");
-                  setMaxFee(3000);
-                }}>
-                Clear All Filters
+            </div>
+          ) : (
+            <div className="p-12 text-center space-y-6 bg-white flex flex-col items-center justify-center min-h-[400px]">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 animate-in zoom-in-50 duration-500">
+                <CheckCircle2 className="h-12 w-12" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-black text-foreground">Success!</h2>
+                <p className="text-muted-foreground">
+                  Confirmed for {bookingDate?.toLocaleDateString()} at {selectedTime}.
+                </p>
+              </div>
+              <div className="p-4 bg-muted/30 rounded-2xl w-full text-left">
+                <p className="text-sm font-bold">Ref: {bookingRefId}</p>
+              </div>
+              <Button className="w-full bg-primary h-12 rounded-2xl" onClick={resetBooking}>
+                Close
               </Button>
             </div>
           )}
-        </div>
-      </main>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
