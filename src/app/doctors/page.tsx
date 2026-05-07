@@ -106,7 +106,7 @@ export default function DoctorsPage() {
       const matchesSearch = doc.name.toLowerCase().includes(search.toLowerCase()) || 
                           doc.specialty.toLowerCase().includes(search.toLowerCase());
       const matchesSpecialty = selectedSpecialty === "All" || doc.specialty === selectedSpecialty;
-      const matchesHospital = selectedHospital === "All" || doc.location === selectedHospital;
+      const matchesHospital = selectedHospital === "All" || doc.location.includes(selectedHospital);
       const matchesFee = doc.fee <= maxFee;
       
       return matchesSearch && matchesSpecialty && matchesHospital && matchesFee;
@@ -192,11 +192,12 @@ export default function DoctorsPage() {
             <div className="flex flex-wrap gap-2">
               <Select value={selectedHospital} onValueChange={setSelectedHospital}>
                 <SelectTrigger className="w-[200px] bg-white border-none shadow-sm rounded-xl h-12">
-                  <SelectValue placeholder="Location" />
+                  <SelectValue placeholder="Hospital" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="All">All Hospitals</SelectItem>
                   {hospitals.map(h => (
-                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                    <SelectItem key={h.id} value={h.name}>{h.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
