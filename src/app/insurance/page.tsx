@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { hospitals } from "@/app/hospitals/page";
+import { hospitals } from "@/lib/mock-data";
 import Link from "next/link";
 
 export default function InsurancePage() {
@@ -373,7 +373,9 @@ export default function InsurancePage() {
                 <p className="text-xs text-muted-foreground mb-4">
                   Our system automatically maps your active policies to the nearest network hospitals to save you time during emergencies.
                 </p>
-                <Button variant="outline" size="sm" className="w-full bg-white">View Hospital Map</Button>
+                <Button variant="outline" size="sm" className="w-full bg-white" asChild>
+                  <Link href="/hospitals">View Hospital Map</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
