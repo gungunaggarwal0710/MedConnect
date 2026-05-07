@@ -23,7 +23,6 @@ import {
   Trash2, 
   Users,
   ShieldAlert,
-  ShieldChevron,
   Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -205,7 +204,7 @@ export default function ProfilePage() {
         <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[2rem]">
           <CardHeader>
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <ShieldChevron className="h-4 w-4 text-primary" /> Prototype Settings
+              <ShieldCheck className="h-4 w-4 text-primary" /> Prototype Settings
             </CardTitle>
             <CardDescription className="text-xs">
               This section is for testing purposes only. You can toggle Admin status to view the SOS Dispatch dashboard.
