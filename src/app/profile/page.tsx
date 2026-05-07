@@ -60,12 +60,13 @@ export default function ProfilePage() {
   const handleToggleAdmin = () => {
     if (!userDocRef) return;
     setIsUpdatingRole(true);
-    const newRole = profile?.role === "admin" ? "patient" : "admin";
+    // Only toggle between doctor and admin as per requirements
+    const newRole = profile?.role === "admin" ? "doctor" : "admin";
     updateDocumentNonBlocking(userDocRef, { role: newRole });
     
     toast({ 
-      title: newRole === "admin" ? "Admin Access Granted" : "Role Reset", 
-      description: newRole === "admin" ? "You now have access to the Emergency Dispatch dashboard." : "Role returned to patient."
+      title: newRole === "admin" ? "Admin Access Granted" : "Role Restored", 
+      description: newRole === "admin" ? "You now have access to the Emergency Dispatch dashboard." : "Role returned to Doctor."
     });
     
     setTimeout(() => setIsUpdatingRole(false), 1000);
@@ -200,35 +201,37 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Prototype/Dev Feature: Elevation to Admin */}
-        <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[2rem]">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Prototype Settings
-            </CardTitle>
-            <CardDescription className="text-xs">
-              This section is for testing purposes only. You can toggle Admin status to view the SOS Dispatch dashboard.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={handleToggleAdmin} 
-              disabled={isUpdatingRole}
-              variant={profile?.role === "admin" ? "outline" : "default"}
-              className="w-full h-12 rounded-2xl font-bold"
-            >
-              {isUpdatingRole ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : profile?.role === "admin" ? (
-                "Demote to Patient Role"
-              ) : (
-                "Elevate to System Admin"
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Prototype/Dev Feature: Elevation to Admin - RESTRICTED TO DOCTORS ONLY */}
+        {(profile?.role === "doctor" || profile?.role === "admin") && (
+          <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[2rem]">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Prototype Settings
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Only verified doctors can toggle System Admin status to view the SOS Dispatch dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleToggleAdmin} 
+                disabled={isUpdatingRole}
+                variant={profile?.role === "admin" ? "outline" : "default"}
+                className="w-full h-12 rounded-2xl font-bold"
+              >
+                {isUpdatingRole ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : profile?.role === "admin" ? (
+                  "Demote to Doctor Role"
+                ) : (
+                  "Elevate to System Admin"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-        {profile?.role !== "doctor" && (
+        {profile?.role === "patient" && (
           <Card className="border-none shadow-xl overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div className="flex items-center gap-2">
