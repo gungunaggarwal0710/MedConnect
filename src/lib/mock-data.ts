@@ -10,13 +10,166 @@ export const specialties = [
   { name: "Obstetrics & Gynaecology", icon: "Heart" },
 ];
 
-export const hospitals = [
+export const hospitalsList = [
   "All", 
   "Max Super Speciality Hospital, Saket", 
   "Batra Hospital, Tughlakabad", 
   "Indraprastha Apollo Hospital, Sarita Vihar",
   "Max Hospital, Shalimar Bagh", 
   "Max Hospital, Patparganj"
+];
+
+export const hospitals = [
+  {
+    id: 1,
+    name: "Max Super Speciality Hospital",
+    location: "Saket, New Delhi",
+    region: "Delhi",
+    phone: "+911126515050",
+    address: "1-2, Press Enclave Road, Saket, New Delhi, Delhi 110017",
+    beds: 120,
+    icu: 24,
+    ventilators: 12,
+    distance: "0.8 km",
+    rating: 4.9,
+    verified: true,
+    acceptedInsurance: ["LIC", "Apollo Munich", "Star Health", "HDFC ERGO", "Max Bupa", "CGHS"]
+  },
+  {
+    id: 2,
+    name: "Indraprastha Apollo Hospital",
+    location: "Sarita Vihar, New Delhi",
+    region: "Delhi",
+    phone: "+911171791090",
+    address: "Mathura Rd, Sarita Vihar, New Delhi, Delhi 110076",
+    beds: 150,
+    icu: 40,
+    ventilators: 20,
+    distance: "3.2 km",
+    rating: 4.8,
+    verified: true,
+    acceptedInsurance: ["Apollo Munich", "Star Health", "ICICI Lombard", "Religare", "CGHS"]
+  },
+  {
+    id: 7,
+    name: "Kailash Hospital & Heart Institute",
+    location: "Sector 27, Noida",
+    region: "Noida",
+    phone: "+911202444444",
+    address: "H-33, Sector 27, Noida, Uttar Pradesh 201301",
+    beds: 100,
+    icu: 20,
+    ventilators: 10,
+    distance: "1.2 km",
+    rating: 4.8,
+    verified: true,
+    acceptedInsurance: ["LIC", "Star Health", "CGHS", "HDFC ERGO"]
+  },
+  {
+    id: 8,
+    name: "Fortis Hospital Noida",
+    location: "Sector 62, Noida",
+    region: "Noida",
+    phone: "+911206622222",
+    address: "B-22, Sector 62, Noida, Uttar Pradesh 201301",
+    beds: 130,
+    icu: 35,
+    ventilators: 18,
+    distance: "4.5 km",
+    rating: 4.7,
+    verified: true,
+    acceptedInsurance: ["Max Bupa", "Cigna TTK", "Star Health", "Religare"]
+  },
+  {
+    id: 9,
+    name: "Jaypee Hospital",
+    location: "Sector 128, Noida",
+    region: "Noida",
+    phone: "+911204122222",
+    address: "Wish Town, Sector 128, Noida, Uttar Pradesh 201304",
+    beds: 150,
+    icu: 45,
+    ventilators: 25,
+    distance: "9.8 km",
+    rating: 4.9,
+    verified: true,
+    acceptedInsurance: ["Apollo Munich", "Star Health", "ICICI Lombard", "Religare"]
+  },
+  {
+    id: 3,
+    name: "Batra Hospital & Medical Research Centre",
+    location: "Tughlakabad, New Delhi",
+    region: "Delhi",
+    phone: "+911129958747",
+    address: "1, Mehrauli - Badarpur Rd, Tughlakabad Institutional Area, Vayusenabad, New Delhi, Delhi 110062",
+    beds: 85,
+    icu: 15,
+    ventilators: 6,
+    distance: "1.4 km",
+    rating: 4.7,
+    verified: true,
+    acceptedInsurance: ["Star Health", "NICL", "Reliance General", "HDFC ERGO", "CGHS"]
+  },
+  {
+    id: 4,
+    name: "Fortis Memorial Research Institute",
+    location: "Sector 44, Gurugram",
+    region: "Gurugram",
+    phone: "+911244962200",
+    address: "Sector - 44, Opposite HUDA City Centre, Gurugram, Haryana 122002",
+    beds: 110,
+    icu: 30,
+    ventilators: 15,
+    distance: "12.5 km",
+    rating: 4.8,
+    verified: true,
+    acceptedInsurance: ["Max Bupa", "Cigna TTK", "Star Health", "Religare"]
+  },
+  {
+    id: 10,
+    name: "Metro Hospital & Heart Institute",
+    location: "Sector 11, Noida",
+    region: "Noida",
+    phone: "+911204366666",
+    address: "L-94, Sector 11, Noida, Uttar Pradesh 201301",
+    beds: 80,
+    icu: 15,
+    ventilators: 5,
+    distance: "2.1 km",
+    rating: 4.6,
+    verified: true,
+    acceptedInsurance: ["Star Health", "NICL", "Reliance General", "CGHS"]
+  },
+  {
+    id: 5,
+    name: "Sir Ganga Ram Hospital",
+    location: "Rajinder Nagar, New Delhi",
+    region: "Delhi",
+    phone: "+911125750000",
+    address: "Sir Ganga Ram Hospital Marg, Old Rajinder Nagar, Rajinder Nagar, New Delhi, Delhi 110060",
+    beds: 95,
+    icu: 18,
+    ventilators: 8,
+    distance: "8.2 km",
+    rating: 4.6,
+    verified: true,
+    acceptedInsurance: ["LIC", "National Insurance", "CGHS", "Star Health"]
+  },
+  {
+    id: 6,
+    name: "AIIMS Delhi",
+    location: "Ansari Nagar, New Delhi",
+    region: "Delhi",
+    phone: "+911126588500",
+    address: "Ansari Nagar, Ansari Nagar East, New Delhi, Delhi 110029",
+    beds: 40,
+    icu: 5,
+    ventilators: 2,
+    distance: "5.5 km",
+    rating: 4.9,
+    verified: true,
+    acceptedInsurance: ["Government", "CGHS", "ECHS"]
+  }
 ];
 
 export const mockBloodDonors = [
