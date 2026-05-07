@@ -14,7 +14,8 @@ import {
   Phone,
   Search,
   ExternalLink,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
@@ -25,7 +26,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export const hospitals = [
   {
@@ -183,8 +184,13 @@ export const hospitals = [
 const regions = ["All", "Delhi", "Noida", "Gurugram"];
 
 export default function HospitalsPage() {
+  const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("All");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filteredHospitals = useMemo(() => {
     return hospitals.filter(h => {
@@ -194,6 +200,14 @@ export default function HospitalsPage() {
       return matchesSearch && matchesRegion;
     });
   }, [search, selectedRegion]);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 pt-4 md:pt-24 min-h-screen bg-background">

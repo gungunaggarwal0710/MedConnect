@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { collection, query, orderBy, limit, serverTimestamp, doc, where } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Button } from "@/components/ui/button";
@@ -144,7 +144,7 @@ function DoctorDashboard({ profile }: { profile: any }) {
 
   const { data: appointments, isLoading: isAptLoading } = useCollection(doctorAppointmentsQuery);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = useMemo(() => new Date().toISOString().split('T')[0], []);
   const todayApts = appointments?.filter(apt => apt.date?.startsWith(today)) || [];
   const pendingApts = appointments?.filter(apt => apt.status === "scheduled") || [];
 
@@ -338,12 +338,15 @@ function PatientDashboard({ profile }: { profile: any }) {
   });
 
   const latest = records?.[0];
-  const chartData = [...(records || [])].reverse().map(r => ({
-    day: r.timestamp?.toDate ? new Date(r.timestamp.toDate()).toLocaleDateString('en-US', { weekday: 'short' }) : '---',
-    bpm: r.heartRate,
-    glucose: r.bloodGlucose,
-    weight: r.weight
-  }));
+  const chartData = useMemo(() => {
+    if (!records) return [];
+    return [...records].reverse().map(r => ({
+      day: r.timestamp?.toDate ? new Date(r.timestamp.toDate()).toLocaleDateString('en-US', { weekday: 'short' }) : '---',
+      bpm: r.heartRate,
+      glucose: r.bloodGlucose,
+      weight: r.weight
+    }));
+  }, [records]);
 
   async function onSubmit(data: HealthRecordValues) {
     if (!db || !user?.uid) return;
