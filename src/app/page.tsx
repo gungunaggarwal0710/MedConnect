@@ -16,14 +16,15 @@ import {
   Hospital,
   ShieldCheck,
   Bot,
-  Sparkles
+  Sparkles,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useUser } from "@/firebase";
 import { Badge } from "@/components/ui/badge";
-import { hospitals } from "@/lib/mock-data";
+import { hospitals, mockDoctors } from "@/lib/mock-data";
 import { useMemo } from "react";
 
 export default function Home() {
@@ -31,6 +32,10 @@ export default function Home() {
 
   const totalBeds = useMemo(() => {
     return hospitals.reduce((acc, curr) => acc + (curr.beds || 0), 0);
+  }, []);
+
+  const totalDoctors = useMemo(() => {
+    return mockDoctors.length;
   }, []);
 
   return (
@@ -137,7 +142,7 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 py-12">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
           <Card className="border-none shadow-md overflow-hidden bg-white group">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center mb-2">
@@ -159,15 +164,33 @@ export default function Home() {
           <Card className="border-none shadow-md overflow-hidden bg-white group">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center mb-2">
-                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><HeartPulse className="h-5 w-5" /></div>
+                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Users className="h-5 w-5" /></div>
                 <Badge variant="outline">TOTAL</Badge>
               </div>
-              <CardTitle className="text-lg text-blue-600">Available Beds</CardTitle>
+              <CardTitle className="text-lg text-blue-600">Specialist Doctors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-end">
+                <span className="text-4xl font-black text-foreground">{totalDoctors}</span>
+                <Link href="/doctors" className="text-blue-600 text-sm font-bold flex items-center">
+                  Search <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-md overflow-hidden bg-white group">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center mb-2">
+                <div className="p-2 bg-green-100 rounded-lg text-green-600"><HeartPulse className="h-5 w-5" /></div>
+                <Badge variant="outline">TOTAL</Badge>
+              </div>
+              <CardTitle className="text-lg text-green-600">Available Beds</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-end">
                 <span className="text-4xl font-black text-foreground">{totalBeds}</span>
-                <Link href="/hospitals" className="text-blue-600 text-sm font-bold flex items-center">
+                <Link href="/hospitals" className="text-green-600 text-sm font-bold flex items-center">
                   Details <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
