@@ -22,7 +22,9 @@ import {
   Plus, 
   Trash2, 
   Users,
-  ShieldAlert
+  ShieldAlert,
+  ShieldChevron,
+  Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,6 +44,7 @@ export default function ProfilePage() {
 
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [newContact, setNewContact] = useState({ name: "", phone: "", relation: "" });
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -53,6 +56,20 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/");
+  };
+
+  const handleToggleAdmin = () => {
+    if (!userDocRef) return;
+    setIsUpdatingRole(true);
+    const newRole = profile?.role === "admin" ? "patient" : "admin";
+    updateDocumentNonBlocking(userDocRef, { role: newRole });
+    
+    toast({ 
+      title: newRole === "admin" ? "Admin Access Granted" : "Role Reset", 
+      description: newRole === "admin" ? "You now have access to the Emergency Dispatch dashboard." : "Role returned to patient."
+    });
+    
+    setTimeout(() => setIsUpdatingRole(false), 1000);
   };
 
   const handleAddEmergencyContact = () => {
@@ -131,12 +148,17 @@ export default function ProfilePage() {
             <div className="mt-4 space-y-1">
               <CardTitle className="text-2xl font-bold">{profile?.name || "Member"}</CardTitle>
               <div className="flex items-center justify-center gap-2">
-                <Badge variant="secondary" className="bg-primary/10 text-primary capitalize">
+                <Badge variant="secondary" className="bg-primary/10 text-primary capitalize font-bold">
                   {profile?.role || "User"}
                 </Badge>
                 {profile?.role === "doctor" && (
                   <Badge variant="outline" className="border-primary text-primary flex items-center gap-1">
                     <BadgeCheck className="h-3 w-3" /> Verified
+                  </Badge>
+                )}
+                {profile?.role === "admin" && (
+                  <Badge variant="destructive" className="flex items-center gap-1 uppercase text-[10px] font-black">
+                    <ShieldCheck className="h-3 w-3" /> System Admin
                   </Badge>
                 )}
               </div>
@@ -179,7 +201,35 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {profile?.role === "patient" && (
+        {/* Prototype/Dev Feature: Elevation to Admin */}
+        <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[2rem]">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <ShieldChevron className="h-4 w-4 text-primary" /> Prototype Settings
+            </CardTitle>
+            <CardDescription className="text-xs">
+              This section is for testing purposes only. You can toggle Admin status to view the SOS Dispatch dashboard.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={handleToggleAdmin} 
+              disabled={isUpdatingRole}
+              variant={profile?.role === "admin" ? "outline" : "default"}
+              className="w-full h-12 rounded-2xl font-bold"
+            >
+              {isUpdatingRole ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : profile?.role === "admin" ? (
+                "Demote to Patient Role"
+              ) : (
+                "Elevate to System Admin"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {profile?.role !== "doctor" && (
           <Card className="border-none shadow-xl overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div className="flex items-center gap-2">
