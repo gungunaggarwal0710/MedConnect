@@ -38,6 +38,10 @@ export default function Home() {
     return mockDoctors.length;
   }, []);
 
+  const insuranceHospitalsCount = useMemo(() => {
+    return hospitals.filter(h => h.acceptedInsurance && h.acceptedInsurance.length > 0).length;
+  }, []);
+
   return (
     <div className="pb-24 pt-4 md:pt-24 bg-background min-h-screen">
       <Navigation />
@@ -142,7 +146,7 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
+        <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 py-12">
           <Card className="border-none shadow-md overflow-hidden bg-white group">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center mb-2">
@@ -167,7 +171,7 @@ export default function Home() {
                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Users className="h-5 w-5" /></div>
                 <Badge variant="outline">TOTAL</Badge>
               </div>
-              <CardTitle className="text-lg text-blue-600">Specialist Doctors</CardTitle>
+              <CardTitle className="text-lg text-blue-600">Specialists</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-end">
@@ -192,6 +196,24 @@ export default function Home() {
                 <span className="text-4xl font-black text-foreground">{totalBeds}</span>
                 <Link href="/hospitals" className="text-green-600 text-sm font-bold flex items-center">
                   Details <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-md overflow-hidden bg-white group">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center mb-2">
+                <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><ShieldCheck className="h-5 w-5" /></div>
+                <Badge className="bg-purple-100 text-purple-800 border-none">COVERED</Badge>
+              </div>
+              <CardTitle className="text-lg text-purple-600">Insurance Partners</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-end">
+                <span className="text-4xl font-black text-foreground">{insuranceHospitalsCount}</span>
+                <Link href="/insurance" className="text-purple-600 text-sm font-bold flex items-center">
+                  Policies <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
             </CardContent>
