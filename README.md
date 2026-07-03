@@ -1,4 +1,4 @@
-# MedConnect+ | AI-Enabled unified Healhcare Platform for all
+# MedConnect+ | AI-Enabled unified Healthcare Platform for all
 
 This is a NextJS healthcare platform featuring emergency SOS, AI symptom analysis, and doctor booking.
 
